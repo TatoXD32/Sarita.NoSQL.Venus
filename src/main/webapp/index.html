@@ -1,10 +1,152 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Start Page</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    </head>
-    <body>
-        <h1>Hello World! 3</h1>
-    </body>
-</html>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Venus | Empleados</title>
+            <style>
+                :root { --ink: #18232b; --muted: #6c7a80; --paper: #f5f7f2; --line: #d8dfd8; --accent: #d76a42; --accent-dark: #a84b2b; --white: #fff; }
+                * { box-sizing: border-box; }
+                body { margin: 0; color: var(--ink); background: var(--paper); font-family: Georgia, 'Times New Roman', serif; }
+                header { padding: 3rem clamp(1.25rem, 6vw, 6rem) 2rem; background: #20343a; color: #f6f1e9; }
+                .eyebrow { margin: 0 0 .5rem; color: #f3b18c; font: 700 .75rem/1.2 Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+                h1 { margin: 0; font-size: clamp(2.3rem, 6vw, 5rem); font-weight: 400; letter-spacing: 0; }
+                header p { max-width: 38rem; margin: .8rem 0 0; color: #c9d7d2; font: 1rem/1.6 Arial, sans-serif; }
+                main { width: min(1180px, calc(100% - 2.5rem)); margin: 2rem auto 4rem; }
+                .toolbar { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+                .toolbar h2 { margin: 0; font-size: 1.7rem; font-weight: 400; }
+                .toolbar span { color: var(--muted); font: .85rem Arial, sans-serif; }
+                .table-wrap { overflow-x: auto; background: var(--white); border: 1px solid var(--line); }
+                table { width: 100%; border-collapse: collapse; min-width: 760px; }
+                th, td { padding: 1rem 1.1rem; border-bottom: 1px solid var(--line); text-align: left; }
+                th { color: var(--muted); background: #eef2ec; font: 700 .7rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+                td { font: .92rem Arial, sans-serif; }
+                tr:last-child td { border-bottom: 0; }
+                .name { font-family: Georgia, 'Times New Roman', serif; font-size: 1rem; }
+                .status { display: inline-block; padding: .3rem .55rem; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+                .status.ACTIVO { color: #286145; background: #d9efe0; }
+                .status.BAJA { color: #8d3c2b; background: #f6dcd4; }
+                .status.COMISION, .status.ENFERMO { color: #725b1f; background: #f4ebc5; }
+                .actions { display: flex; gap: .5rem; white-space: nowrap; }
+                button { border: 1px solid var(--ink); padding: .65rem .8rem; color: var(--ink); background: transparent; cursor: pointer; font: 700 .75rem Arial, sans-serif; }
+                button:hover { color: var(--white); background: var(--ink); }
+                button.danger { border-color: var(--accent); color: var(--accent-dark); }
+                button.danger:hover { color: var(--white); background: var(--accent); }
+                .empty, .error { padding: 2rem; text-align: center; font: 1rem Arial, sans-serif; }
+                .error { color: var(--accent-dark); }
+                dialog { width: min(620px, calc(100% - 2rem)); border: 0; padding: 0; box-shadow: 0 1rem 4rem #18232b40; }
+                dialog::backdrop { background: #18232b99; }
+                .modal { padding: 1.5rem; }
+                .modal h2 { margin: 0 0 1.2rem; font-size: 1.8rem; font-weight: 400; }
+                .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+                label { display: grid; gap: .35rem; color: var(--muted); font: .72rem Arial, sans-serif; text-transform: uppercase; letter-spacing: .06em; }
+                input, select { width: 100%; border: 1px solid var(--line); padding: .7rem; color: var(--ink); background: #fbfcfa; font: .95rem Arial, sans-serif; }
+                .modal-actions { display: flex; justify-content: end; gap: .6rem; margin-top: 1.4rem; }
+                @media (max-width: 600px) { header { padding-top: 2rem; } main { width: min(100% - 1.25rem, 1180px); } .toolbar { align-items: start; flex-direction: column; } .form-grid { grid-template-columns: 1fr; } }
+            </style>
+        </head>
+        <body>
+            <header>
+                <p class="eyebrow">Venus / Recursos humanos</p>
+                <h1>Directorio de empleados</h1>
+                <p>Consulta la plantilla, actualiza sus datos y conserva el historial de las bajas.</p>
+            </header>
+            <main>
+                <section class="toolbar">
+                    <div><h2>Personal registrado</h2><span id="count">Cargando...</span></div>
+                    <button id="refresh" type="button">Actualizar lista</button>
+                </section>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Empleado</th><th>Contacto</th><th>Departamento</th><th>Puesto</th><th>Estatus</th><th>Acciones</th></tr></thead>
+                        <tbody id="employees"><tr><td class="empty" colspan="6">Cargando empleados...</td></tr></tbody>
+                    </table>
+                </div>
+            </main>
+            <dialog id="edit-dialog">
+                <form class="modal" id="edit-form" method="dialog">
+                    <h2>Editar empleado</h2>
+                    <div class="form-grid">
+                        <label>Nombre<input name="nombre" required></label>
+                        <label>Apellido paterno<input name="apellidoPaterno" required></label>
+                        <label>Apellido materno<input name="apellidoMaterno"></label>
+                        <label>Fecha de nacimiento<input name="fechaNacimiento" type="date" required></label>
+                        <label>Correo institucional<input name="correoInstitucional" type="email" required></label>
+                        <label>Teléfono celular<input name="telefonoCelular"></label>
+                        <label>Sexo<select name="idSexo" id="sexos" required></select></label>
+                        <label>Departamento<select name="idDepto" id="departamentos" required></select></label>
+                        <label>Puesto<select name="idPuesto" id="puestos" required></select></label>
+                    </div>
+                    <div class="modal-actions"><button value="cancel" type="button" id="cancel">Cancelar</button><button value="submit" type="submit">Guardar cambios</button></div>
+                </form>
+            </dialog>
+            <script>
+                const api = 'resources/empleados';
+                const table = document.querySelector('#employees');
+                const dialog = document.querySelector('#edit-dialog');
+                const form = document.querySelector('#edit-form');
+                let employees = [];
+                let catalogs = { departamentos: [], puestos: [], sexos: [] };
+                let editingId;
+
+                const fullName = employee => [employee.nombre, employee.apellidoPaterno, employee.apellidoMaterno].filter(Boolean).join(' ');
+                const option = (value, label) => `<option value="${value}">${label}</option>`;
+
+                async function load() {
+                    table.innerHTML = '<tr><td class="empty" colspan="6">Cargando empleados...</td></tr>';
+                    try {
+                        const [employeeResponse, catalogResponse] = await Promise.all([fetch(api), fetch(`${api}/catalogos`)]);
+                        if (!employeeResponse.ok || !catalogResponse.ok) throw new Error('No se pudieron cargar los datos.');
+                        employees = await employeeResponse.json();
+                        catalogs = await catalogResponse.json();
+                        render();
+                    } catch (error) {
+                        table.innerHTML = `<tr><td class="error" colspan="6">${error.message}</td></tr>`;
+                        document.querySelector('#count').textContent = 'Error de conexión';
+                    }
+                }
+
+                function render() {
+                    document.querySelector('#count').textContent = `${employees.length} empleados`;
+                    if (!employees.length) { table.innerHTML = '<tr><td class="empty" colspan="6">No hay empleados registrados.</td></tr>'; return; }
+                    table.innerHTML = employees.map(employee => `<tr>
+                        <td><div class="name">${fullName(employee)}</div><small>${employee.correoInstitucional}</small></td>
+                        <td>${employee.telefonoCelular || 'Sin teléfono'}</td>
+                        <td>${employee.departamento.descripcion}</td>
+                        <td>${employee.puesto.descripcionPuesto}</td>
+                        <td><span class="status ${employee.estatus.idEstatus}">${employee.estatus.idEstatus}</span></td>
+                        <td class="actions"><button type="button" data-edit="${employee.idEmpleado}">Editar</button><button type="button" class="danger" data-delete="${employee.idEmpleado}">Dar de baja</button></td>
+                    </tr>`).join('');
+                }
+
+                function openEditor(employee) {
+                    editingId = employee.idEmpleado;
+                    for (const [key, value] of Object.entries(employee)) if (form.elements[key]) form.elements[key].value = value || '';
+                    document.querySelector('#sexos').innerHTML = catalogs.sexos.map(item => option(item.idSexo, item.descripcion)).join('');
+                    document.querySelector('#departamentos').innerHTML = catalogs.departamentos.map(item => option(item.idDepto, item.descripcion)).join('');
+                    document.querySelector('#puestos').innerHTML = catalogs.puestos.map(item => option(item.idPuesto, item.descripcionPuesto)).join('');
+                    form.elements.idSexo.value = employee.sexo.idSexo;
+                    form.elements.idDepto.value = employee.departamento.idDepto;
+                    form.elements.idPuesto.value = employee.puesto.idPuesto;
+                    dialog.showModal();
+                }
+
+                table.addEventListener('click', event => {
+                    const edit = event.target.closest('[data-edit]');
+                    const remove = event.target.closest('[data-delete]');
+                    if (edit) openEditor(employees.find(item => item.idEmpleado === Number(edit.dataset.edit)));
+                    if (remove && confirm('¿Dar de baja a este empleado?')) fetch(`${api}/${remove.dataset.delete}`, { method: 'DELETE' }).then(load);
+                });
+                form.addEventListener('submit', async event => {
+                    event.preventDefault();
+                    const data = Object.fromEntries(new FormData(form));
+                    const response = await fetch(`${api}/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                    if (!response.ok) { alert('No fue posible guardar los cambios.'); return; }
+                    dialog.close(); load();
+                });
+                document.querySelector('#cancel').addEventListener('click', () => dialog.close());
+                document.querySelector('#refresh').addEventListener('click', load);
+                load();
+            </script>
+        </body>
+    </html>
