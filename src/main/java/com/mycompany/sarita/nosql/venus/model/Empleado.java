@@ -37,6 +37,9 @@ public class Empleado {
     @JoinColumn(name = "id_depto", nullable = false)
     private Departamento departamento;
     @ManyToOne
+    @JoinColumn(name = "id_domicilio", nullable = false, unique = true)
+    private Domicilio domicilio;
+    @ManyToOne
     @JoinColumn(name = "id_puesto", nullable = false)
     private Puesto puesto;
     @ManyToOne
@@ -62,6 +65,8 @@ public class Empleado {
     public void setSexo(Sexo sexo) { this.sexo = sexo; }
     public Departamento getDepartamento() { return departamento; }
     public void setDepartamento(Departamento departamento) { this.departamento = departamento; }
+    public Domicilio getDomicilio() { return domicilio; }
+    public void setDomicilio(Domicilio domicilio) { this.domicilio = domicilio; }
     public Puesto getPuesto() { return puesto; }
     public void setPuesto(Puesto puesto) { this.puesto = puesto; }
     public CatEstatus getEstatus() { return estatus; }
