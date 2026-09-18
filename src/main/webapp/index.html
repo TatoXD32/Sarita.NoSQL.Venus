@@ -1,319 +1,84 @@
 <!DOCTYPE html>
-<html>
-    <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Venus | Empleados</title>
-            <link rel="stylesheet" href="styles.css">
-        </head>
-        <body>
-            <header>
-                <p class="eyebrow">Venus / Recursos humanos</p>
-                <h1>Directorio de empleados</h1>
-                <p>Consulta la plantilla, actualiza sus datos y conserva el historial de las bajas.</p>
-            </header>
-                        <nav class="tabs" aria-label="Secciones">
-                                <button type="button" class="active" data-view="employees-view">Empleados</button>
-                                <button type="button" data-view="courses-view">Cursos y asignaciones</button>
-                                <button type="button" data-view="catalogs-view">Catálogos</button>
-                        </nav>
-                        <main>
-                            <section id="employees-view" class="view active">
-                <section class="toolbar">
-                    <div><h2>Personal registrado</h2><span id="count">Cargando...</span></div>
-                    <div class="toolbar-actions"><button id="new-employee" type="button">Nuevo empleado</button><button id="refresh" type="button">Actualizar lista</button></div>
-                </section>
-                <div class="table-wrap">
-                    <table>
-                        <thead><tr><th>Empleado</th><th>Contacto</th><th>Departamento</th><th>Puesto</th><th>Estatus</th><th>Acciones</th></tr></thead>
-                        <tbody id="employees"><tr><td class="empty" colspan="6">Cargando empleados...</td></tr></tbody>
-                    </table>
-                </div>
-                            </section>
-                            <section id="courses-view" class="view">
-                                <div class="toolbar"><div><h2>Cursos y asignaciones</h2><span class="muted">Gestiona la capacitación de cada empleado.</span></div><button id="reload-courses" type="button">Actualizar</button></div>
-                                <div class="admin-grid">
-                                    <article class="panel">
-                                        <h2>Nuevo curso</h2>
-                                        <form id="course-form">
-                                            <label>Nombre<input name="nombre" required></label>
-                                            <label>Descripción<input name="descripcion"></label>
-                                            <label>Estatus<select name="idEstatus" id="course-status" required></select></label>
-                                            <button type="submit">Guardar curso</button>
-                                        </form>
-                                        <div class="table-wrap"><table><thead><tr><th>Curso</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="courses-body"></tbody></table></div>
-                                    </article>
-                                    <article class="panel">
-                                        <h2>Asignar curso</h2>
-                                        <form id="assignment-form">
-                                            <label>Empleado<select name="idEmpleado" id="assignment-employee" required></select></label>
-                                            <label>Curso<select name="idCurso" id="assignment-course" required></select></label>
-                                            <label>Inicio<input name="fechaInicio" type="date" required></label>
-                                            <label>Fin<input name="fechaFin" type="date"></label>
-                                            <label class="check-label"><input id="ongoing-course" type="checkbox" checked> Curso en curso <span>La fecha final se guardará como NULL.</span></label>
-                                            <button type="submit">Asignar curso</button>
-                                        </form>
-                                        <div class="table-wrap"><table><thead><tr><th>Empleado</th><th>Curso</th><th>Inicio</th><th>Fin</th></tr></thead><tbody id="assignments-body"></tbody></table></div>
-                                    </article>
-                                </div>
-                            </section>
-                            <section id="catalogs-view" class="view">
-                                <div class="toolbar"><div><h2>Catálogos</h2><span class="muted">Administra valores reutilizados por empleados y domicilios.</span></div><button id="reload-catalogs" type="button">Actualizar</button></div>
-                                <div class="admin-grid">
-                                    <article class="panel"><h2>Países</h2><form id="country-form"><label>Clave<input name="idPais" maxlength="3" required></label><label>Nombre<input name="nombre" required></label><label>Estatus<select name="idEstatus" class="status-select" required></select></label><button type="submit">Guardar país</button></form><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Nombre</th><th>Estatus</th></tr></thead><tbody id="countries-body"></tbody></table></div></article>
-                                    <article class="panel"><h2>Estados</h2><form id="state-form"><label>Clave<input name="idEstado" maxlength="5" required></label><label>Nombre<input name="nombre" required></label><label>País<select name="idPais" id="state-country" required></select></label><label>Estatus<select name="idEstatus" class="status-select" required></select></label><button type="submit">Guardar estado</button></form><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Estado</th><th>País</th></tr></thead><tbody id="states-body"></tbody></table></div></article>
-                                    <article class="panel"><h2>Estatus disponibles</h2><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Descripción</th><th>Categoría</th></tr></thead><tbody id="statuses-body"></tbody></table></div></article>
-                                </div>
-                            </section>
-                        </main>
-            <dialog id="edit-dialog">
-                <form class="modal" id="edit-form" method="dialog">
-                    <h2 id="form-title">Editar empleado</h2>
-                    <div class="form-grid">
-                        <label>Nombre<input name="nombre" required></label>
-                        <label>Apellido paterno<input name="apellidoPaterno" required></label>
-                        <label>Apellido materno<input name="apellidoMaterno"></label>
-                        <label>Fecha de nacimiento<input name="fechaNacimiento" type="date" required></label>
-                        <label>Fecha de ingreso<input name="fechaIngreso" type="date" required></label>
-                        <label>Correo institucional<input name="correoInstitucional" type="email" required></label>
-                        <label>Teléfono celular<input name="telefonoCelular"></label>
-                        <label>Sexo<select name="idSexo" id="sexos" required></select></label>
-                        <label>Departamento<select name="idDepto" id="departamentos" required></select></label>
-                        <label>Puesto<select name="idPuesto" id="puestos" required></select></label>
-                        <label>Estatus<select name="idEstatus" id="estatuses" required></select></label>
-                        <label>Calle<input name="calle" required></label>
-                        <label>Código postal<input name="codigoPostal" maxlength="5" required></label>
-                        <label>Número exterior<input name="numeroExterior" required></label>
-                        <label>Número interior<input name="numeroInterior"></label>
-                        <label>Estado<select name="idEstado" id="estados-domicilio" required></select></label>
-                    </div>
-                    <div class="modal-actions"><button value="cancel" type="button" id="cancel">Cancelar</button><button value="submit" type="submit">Guardar cambios</button></div>
-                </form>
-            </dialog>
-            <dialog id="detail-dialog">
-                <article class="detail-modal">
-                    <div class="detail-heading"><div><p class="eyebrow">Ficha de personal</p><h2 id="detail-name">Empleado</h2></div><button type="button" id="close-detail" aria-label="Cerrar detalle">Cerrar</button></div>
-                    <div id="employee-detail" class="detail-content"></div>
-                </article>
-            </dialog>
-            <script>
-                const api = 'resources/empleados';
-                const table = document.querySelector('#employees');
-                const dialog = document.querySelector('#edit-dialog');
-                const detailDialog = document.querySelector('#detail-dialog');
-                const detailContent = document.querySelector('#employee-detail');
-                const form = document.querySelector('#edit-form');
-                let employees = [];
-                let catalogs = { departamentos: [], puestos: [], sexos: [], estatuses: [], domicilios: [], estados: [] };
-                let editingId;
-
-                const fullName = employee => [employee.nombre, employee.apellidoPaterno, employee.apellidoMaterno].filter(Boolean).join(' ');
-                const option = (value, label) => `<option value="${value}">${label}</option>`;
-
-                function statusOptions() {
-                    return catalogs.estatuses.map(item => option(item.idEstatus, `${item.idEstatus} - ${item.descripcion}`)).join('');
-                }
-
-                function employeeLabel(employee) {
-                    return `${fullName(employee)} (#${employee.idEmpleado})`;
-                }
-
-                async function loadAdmin() {
-                    try {
-                        const [coursesResponse, countriesResponse, statesResponse, assignmentsResponse] = await Promise.all([
-                            fetch('resources/catalogos/cursos'), fetch('resources/catalogos/paises'),
-                            fetch('resources/catalogos/estados'), fetch('resources/empleado-cursos')
-                        ]);
-                        if (![coursesResponse, countriesResponse, statesResponse, assignmentsResponse].every(response => response.ok)) throw new Error('No se pudo cargar la administración.');
-                        const courses = await coursesResponse.json();
-                        const countries = await countriesResponse.json();
-                        const states = await statesResponse.json();
-                        const assignments = await assignmentsResponse.json();
-                        renderAdmin(courses, countries, states, assignments);
-                    } catch (error) {
-                        document.querySelector('#courses-body').innerHTML = `<tr><td colspan="3" class="error">${error.message}</td></tr>`;
-                    }
-                }
-
-                function renderAdmin(courses, countries, states, assignments) {
-                    const statuses = statusOptions();
-                    document.querySelector('#course-status').innerHTML = statuses;
-                    document.querySelectorAll('.status-select').forEach(select => select.innerHTML = statuses);
-                    document.querySelector('#assignment-employee').innerHTML = employees.map(employee => option(employee.idEmpleado, employeeLabel(employee))).join('');
-                    document.querySelector('#assignment-course').innerHTML = courses.filter(course => course.idEstatus === 'ACTIVO').map(course => option(course.idCurso, course.nombre)).join('');
-                    document.querySelector('#state-country').innerHTML = countries.filter(country => country.idEstatus === 'ACTIVO').map(country => option(country.idPais, country.nombre)).join('');
-                    document.querySelector('#courses-body').innerHTML = courses.map(course => `<tr><td>${course.nombre}<br><small>${course.descripcion || ''}</small></td><td>${course.idEstatus}</td><td><button type="button" data-course-status="${course.idCurso}" data-next-status="${course.idEstatus === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO'}">${course.idEstatus === 'ACTIVO' ? 'Desactivar' : 'Activar'}</button></td></tr>`).join('');
-                    document.querySelector('#countries-body').innerHTML = countries.map(country => `<tr><td>${country.idPais}</td><td>${country.nombre}</td><td>${country.idEstatus}</td></tr>`).join('');
-                    document.querySelector('#states-body').innerHTML = states.map(state => `<tr><td>${state.idEstado}</td><td>${state.nombre}</td><td>${state.pais.nombre}</td></tr>`).join('');
-                    document.querySelector('#statuses-body').innerHTML = catalogs.estatuses.map(status => `<tr><td>${status.idEstatus}</td><td>${status.descripcion}</td><td>${status.categoria}</td></tr>`).join('');
-                    document.querySelector('#courses-body').querySelectorAll('[data-course-status]').forEach(button => button.addEventListener('click', async () => {
-                        const course = courses.find(item => item.idCurso === Number(button.dataset.courseStatus));
-                        await fetch(`resources/catalogos/cursos/${course.idCurso}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: course.nombre, descripcion: course.descripcion, idEstatus: button.dataset.nextStatus }) });
-                        loadAdmin();
-                    }));
-                    document.querySelector('#assignments-body').innerHTML = assignments.map(item => `<tr><td>${employeeLabel(item.empleado)}</td><td>${item.curso.nombre}</td><td>${item.fechaInicio || ''}</td><td>${item.fechaFin || 'En curso'}</td></tr>`).join('');
-                }
-
-                async function load() {
-                    table.innerHTML = '<tr><td class="empty" colspan="6">Cargando empleados...</td></tr>';
-                    try {
-                        const [employeeResponse, catalogResponse] = await Promise.all([fetch(api), fetch(`${api}/catalogos`)]);
-                        if (!employeeResponse.ok || !catalogResponse.ok) throw new Error('No se pudieron cargar los datos.');
-                        employees = await employeeResponse.json();
-                        catalogs = await catalogResponse.json();
-                        render();
-                        loadAdmin();
-                    } catch (error) {
-                        table.innerHTML = `<tr><td class="error" colspan="6">${error.message}</td></tr>`;
-                        document.querySelector('#count').textContent = 'Error de conexión';
-                    }
-                }
-
-                function render() {
-                    document.querySelector('#count').textContent = `${employees.length} empleados`;
-                    if (!employees.length) { table.innerHTML = '<tr><td class="empty" colspan="6">No hay empleados registrados.</td></tr>'; return; }
-                    table.innerHTML = employees.map(employee => `<tr>
-                        <td><div class="name">${fullName(employee)}</div><small>${employee.correoInstitucional}</small></td>
-                        <td>${employee.telefonoCelular || 'Sin teléfono'}</td>
-                        <td>${employee.departamento.descripcion}</td>
-                        <td>${employee.puesto.descripcionPuesto}</td>
-                        <td><span class="status ${employee.estatus.idEstatus}">${employee.estatus.idEstatus}</span></td>
-                        <td class="actions"><button type="button" data-detail="${employee.idEmpleado}">Ver detalle</button><button type="button" data-edit="${employee.idEmpleado}">Editar</button><button type="button" class="danger" data-delete="${employee.idEmpleado}">Dar de baja</button></td>
-                    </tr>`).join('');
-                }
-
-                async function openDetail(employee) {
-                    document.querySelector('#detail-name').textContent = fullName(employee);
-                    detailContent.innerHTML = '<p class="muted">Cargando información...</p>';
-                    detailDialog.showModal();
-                    try {
-                        const response = await fetch(`resources/empleado-cursos/empleado/${employee.idEmpleado}`);
-                        const courses = response.ok ? await response.json() : [];
-                        const address = employee.domicilio;
-                        detailContent.innerHTML = `
-                            <div class="detail-grid">
-                                <section class="detail-section"><h3>Datos personales</h3><dl>
-                                    <dt>Nombre completo</dt><dd>${fullName(employee)}</dd>
-                                    <dt>Fecha de nacimiento</dt><dd>${employee.fechaNacimiento || 'Sin registrar'}</dd>
-                                    <dt>Sexo</dt><dd>${employee.sexo?.descripcion || employee.sexo?.idSexo || 'Sin registrar'}</dd>
-                                    <dt>Fecha de ingreso</dt><dd>${employee.fechaIngreso || 'Sin registrar'}</dd>
-                                </dl></section>
-                                <section class="detail-section"><h3>Contacto y puesto</h3><dl>
-                                    <dt>Correo institucional</dt><dd>${employee.correoInstitucional}</dd>
-                                    <dt>Teléfono celular</dt><dd>${employee.telefonoCelular || 'Sin registrar'}</dd>
-                                    <dt>Departamento</dt><dd>${employee.departamento?.descripcion || 'Sin registrar'}</dd>
-                                    <dt>Puesto</dt><dd>${employee.puesto?.descripcionPuesto || 'Sin registrar'}</dd>
-                                    <dt>Estatus</dt><dd><span class="status ${employee.estatus?.idEstatus || ''}">${employee.estatus?.idEstatus || 'Sin registrar'}</span></dd>
-                                </dl></section>
-                                <section class="detail-section"><h3>Domicilio</h3><dl>
-                                    <dt>Calle</dt><dd>${address?.calle || 'Sin registrar'}</dd>
-                                    <dt>Exterior / interior</dt><dd>${address?.numeroExterior || 'Sin registrar'}${address?.numeroInterior ? ` / ${address.numeroInterior}` : ''}</dd>
-                                    <dt>Código postal</dt><dd>${address?.codigoPostal || 'Sin registrar'}</dd>
-                                    <dt>Estado</dt><dd>${address?.estado?.nombre || 'Sin registrar'}</dd>
-                                    <dt>País</dt><dd>${address?.estado?.pais?.nombre || 'Sin registrar'}</dd>
-                                </dl></section>
-                                <section class="detail-section detail-courses"><h3>Cursos inscritos</h3>${courses.length ? `<ul>${courses.map(item => `<li><strong>${item.curso.nombre}</strong><span>${item.fechaInicio || 'Sin inicio'} - ${item.fechaFin || 'En curso'}</span></li>`).join('')}</ul>` : '<p class="muted">No tiene cursos inscritos.</p>'}</section>
-                            </div>`;
-                    } catch (error) {
-                        detailContent.innerHTML = '<p class="error">No se pudieron cargar los cursos de este empleado.</p>';
-                    }
-                }
-
-                function fillCatalogs() {
-                    document.querySelector('#sexos').innerHTML = catalogs.sexos.map(item => option(item.idSexo, item.descripcion)).join('');
-                    document.querySelector('#departamentos').innerHTML = catalogs.departamentos.map(item => option(item.idDepto, item.descripcion)).join('');
-                    document.querySelector('#puestos').innerHTML = catalogs.puestos.map(item => option(item.idPuesto, item.descripcionPuesto)).join('');
-                    document.querySelector('#estatuses').innerHTML = catalogs.estatuses.map(item => option(item.idEstatus, `${item.idEstatus} - ${item.descripcion}`)).join('');
-                    document.querySelector('#estados-domicilio').innerHTML = catalogs.estados.map(item => option(item.idEstado, `${item.nombre} - ${item.pais.nombre}`)).join('');
-                }
-
-                function openEditor(employee) {
-                    editingId = employee?.idEmpleado;
-                    document.querySelector('#form-title').textContent = employee ? 'Editar empleado' : 'Nuevo empleado';
-                    form.reset();
-                    fillCatalogs();
-                    if (!employee) { dialog.showModal(); return; }
-                    for (const [key, value] of Object.entries(employee)) if (form.elements[key]) form.elements[key].value = value || '';
-                    form.elements.idSexo.value = employee.sexo.idSexo;
-                    form.elements.idDepto.value = employee.departamento.idDepto;
-                    form.elements.idPuesto.value = employee.puesto.idPuesto;
-                    form.elements.idEstatus.value = employee.estatus.idEstatus;
-                    if (employee.domicilio) {
-                        form.elements.calle.value = employee.domicilio.calle || '';
-                        form.elements.codigoPostal.value = employee.domicilio.codigoPostal || '';
-                        form.elements.numeroExterior.value = employee.domicilio.numeroExterior || '';
-                        form.elements.numeroInterior.value = employee.domicilio.numeroInterior || '';
-                        form.elements.idEstado.value = employee.domicilio.estado.idEstado;
-                    }
-                    dialog.showModal();
-                }
-
-                table.addEventListener('click', event => {
-                    const edit = event.target.closest('[data-edit]');
-                    const detail = event.target.closest('[data-detail]');
-                    const remove = event.target.closest('[data-delete]');
-                    if (detail) openDetail(employees.find(item => item.idEmpleado === Number(detail.dataset.detail)));
-                    if (edit) openEditor(employees.find(item => item.idEmpleado === Number(edit.dataset.edit)));
-                    if (remove && confirm('¿Dar de baja a este empleado?')) fetch(`${api}/${remove.dataset.delete}`, { method: 'DELETE' }).then(load);
-                });
-                form.addEventListener('submit', async event => {
-                    event.preventDefault();
-                    const data = Object.fromEntries(new FormData(form));
-                    const url = editingId ? `${api}/${editingId}` : api;
-                    const response = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-                    if (!response.ok) { alert(await response.text() || 'No fue posible guardar los cambios.'); return; }
-                    dialog.close(); load();
-                });
-                document.querySelector('#cancel').addEventListener('click', () => dialog.close());
-                document.querySelector('#close-detail').addEventListener('click', () => detailDialog.close());
-                document.querySelector('#new-employee').addEventListener('click', () => openEditor());
-                document.querySelector('#refresh').addEventListener('click', load);
-                document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
-                    document.querySelectorAll('.tabs button').forEach(item => item.classList.remove('active'));
-                    document.querySelectorAll('.view').forEach(item => item.classList.remove('active'));
-                    button.classList.add('active');
-                    document.querySelector(`#${button.dataset.view}`).classList.add('active');
-                    if (button.dataset.view !== 'employees-view') loadAdmin();
-                }));
-                document.querySelector('#reload-courses').addEventListener('click', loadAdmin);
-                document.querySelector('#reload-catalogs').addEventListener('click', loadAdmin);
-                document.querySelector('#course-form').addEventListener('submit', async event => {
-                    event.preventDefault();
-                    const data = Object.fromEntries(new FormData(event.target));
-                    const response = await fetch('resources/catalogos/cursos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-                    if (!response.ok) { alert(await response.text() || 'No fue posible guardar el curso.'); return; }
-                    event.target.reset(); loadAdmin();
-                });
-                document.querySelector('#country-form').addEventListener('submit', async event => {
-                    event.preventDefault();
-                    const response = await fetch('resources/catalogos/paises', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(event.target))) });
-                    if (!response.ok) { alert(await response.text() || 'No fue posible guardar el país.'); return; }
-                    event.target.reset(); loadAdmin();
-                });
-                document.querySelector('#state-form').addEventListener('submit', async event => {
-                    event.preventDefault();
-                    const response = await fetch('resources/catalogos/estados', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(event.target))) });
-                    if (!response.ok) { alert(await response.text() || 'No fue posible guardar el estado.'); return; }
-                    event.target.reset(); loadAdmin();
-                });
-                document.querySelector('#assignment-form').addEventListener('submit', async event => {
-                    event.preventDefault();
-                    const data = Object.fromEntries(new FormData(event.target));
-                    if (document.querySelector('#ongoing-course').checked) data.fechaFin = null;
-                    const response = await fetch('resources/empleado-cursos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-                    if (!response.ok) { alert(await response.text() || 'No fue posible asignar el curso.'); return; }
-                    event.target.reset();
-                    document.querySelector('#ongoing-course').checked = true;
-                    document.querySelector('#assignment-form [name="fechaFin"]').disabled = true;
-                    loadAdmin();
-                });
-                document.querySelector('#ongoing-course').addEventListener('change', event => {
-                    const endDate = document.querySelector('#assignment-form [name="fechaFin"]');
-                    endDate.disabled = event.target.checked;
-                    if (event.target.checked) endDate.value = '';
-                });
-                document.querySelector('#assignment-form [name="fechaFin"]').disabled = true;
-                load();
-            </script>
-        </body>
-    </html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venus | Recursos humanos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+    <p class="eyebrow">Venus / Recursos humanos</p>
+    <h1>Directorio de empleados</h1>
+    <p>Consulta la plantilla, actualiza sus datos y administra los catalogos de la organizacion.</p>
+</header>
+<nav class="tabs" aria-label="Secciones principales">
+    <button class="active" data-view="employees-view" type="button">Empleados</button>
+    <button data-view="courses-view" type="button">Cursos y asignaciones</button>
+    <button data-view="catalogs-view" type="button">Catalogos</button>
+</nav>
+<main>
+<section id="employees-view" class="view active">
+    <div class="toolbar"><div><h2>Personal registrado</h2><span id="count">Cargando...</span></div><div class="toolbar-actions"><button id="new-employee" class="primary" type="button">Nuevo empleado</button><button id="refresh" type="button">Actualizar lista</button></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Empleado</th><th>Contacto</th><th>Departamento</th><th>Puesto</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="employees"><tr><td class="empty" colspan="6">Cargando empleados...</td></tr></tbody></table></div>
+</section>
+<section id="courses-view" class="view">
+    <div class="toolbar"><div><h2>Cursos y asignaciones</h2><span class="muted">Gestiona la capacitacion del personal.</span></div><button id="reload-courses" type="button">Actualizar</button></div>
+    <div class="admin-grid">
+        <article class="panel"><h2>Curso</h2><form id="course-form"><input type="hidden" name="idCurso"><label>Nombre<input name="nombre" required></label><label>Descripcion<input name="descripcion"></label><label>Estatus<select name="idEstatus" id="course-status" required></select></label><button class="primary" type="submit">Guardar curso</button></form><div class="table-wrap"><table><thead><tr><th>Curso</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="courses-body"></tbody></table></div></article>
+        <article class="panel"><h2>Asignar curso</h2><form id="assignment-form"><label>Empleado<select name="idEmpleado" id="assignment-employee" required></select></label><label>Curso<select name="idCurso" id="assignment-course" required></select></label><label>Inicio<input name="fechaInicio" type="date" required></label><label>Fin<input name="fechaFin" type="date"></label><label class="check-label"><input id="ongoing-course" type="checkbox" checked> Curso en curso <span>La fecha final se guardara como NULL.</span></label><button class="primary" type="submit">Asignar curso</button></form><div class="table-wrap"><table><thead><tr><th>Empleado</th><th>Curso</th><th>Inicio</th><th>Fin</th></tr></thead><tbody id="assignments-body"></tbody></table></div></article>
+    </div>
+</section>
+<section id="catalogs-view" class="view">
+    <div class="toolbar"><div><h2>Catalogos</h2><span class="muted">Administra cada tipo de dato desde su propia seccion.</span></div><button id="reload-catalogs" type="button">Actualizar</button></div>
+    <nav class="subtabs" aria-label="Catalogos"><button class="active" data-catalog="locations-panel" type="button">Paises y estados</button><button data-catalog="jobs-panel" type="button">Puestos y departamentos</button><button data-catalog="statuses-panel" type="button">Estatus</button></nav>
+    <div id="locations-panel" class="catalog-panel active"><div class="admin-grid">
+        <article class="panel"><h2>Paises</h2><form id="country-form"><input type="hidden" name="editingId"><label>Clave<input name="idPais" maxlength="3" required></label><label>Nombre<input name="nombre" required></label><label>Estatus<select name="idEstatus" class="general-status" required></select></label><div class="form-actions"><button class="primary" type="submit">Guardar pais</button><button id="cancel-country" type="button">Cancelar</button></div></form><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Nombre</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="countries-body"></tbody></table></div></article>
+        <article class="panel"><h2>Estados</h2><form id="state-form"><input type="hidden" name="editingId"><label>Clave<input name="idEstado" maxlength="5" required></label><label>Nombre<input name="nombre" required></label><label>Pais<select name="idPais" id="state-country" required></select></label><label>Estatus<select name="idEstatus" class="general-status" required></select></label><div class="form-actions"><button class="primary" type="submit">Guardar estado</button><button id="cancel-state" type="button">Cancelar</button></div></form><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Estado</th><th>Pais</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="states-body"></tbody></table></div></article>
+    </div></div>
+    <div id="jobs-panel" class="catalog-panel"><div class="admin-grid">
+        <article class="panel"><h2>Departamentos</h2><form id="department-form"><input type="hidden" name="editingId"><label>Descripcion<input name="descripcion" required></label><label>Estatus<select name="idEstatus" class="general-status" required></select></label><div class="form-actions"><button class="primary" type="submit">Guardar departamento</button><button id="cancel-department" type="button">Cancelar</button></div></form><div class="table-wrap"><table><thead><tr><th>Descripcion</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="departments-body"></tbody></table></div></article>
+        <article class="panel"><h2>Puestos</h2><form id="position-form"><input type="hidden" name="editingId"><label>Descripcion<input name="descripcionPuesto" required></label><label>Estatus<select name="idEstatus" class="general-status" required></select></label><div class="form-actions"><button class="primary" type="submit">Guardar puesto</button><button id="cancel-position" type="button">Cancelar</button></div></form><div class="table-wrap"><table><thead><tr><th>Descripcion</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="positions-body"></tbody></table></div></article>
+    </div></div>
+    <div id="statuses-panel" class="catalog-panel"><article class="panel"><h2>Estatus disponibles</h2><p class="muted">La clave no cambia al editar porque otras tablas la utilizan como referencia. Para crear uno nuevo, captura una clave.</p><form id="status-form"><input type="hidden" name="editingId"><label>Clave<input name="idEstatus" required maxlength="20"></label><label>Descripcion<input name="descripcion" required></label><label>Categoria<select name="categoria" required><option value="GENERAL">GENERAL</option><option value="EMPLEADO">EMPLEADO</option></select></label><div class="form-actions"><button class="primary" type="submit">Guardar estatus</button><button id="cancel-status" type="button">Cancelar</button></div></form><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Descripcion</th><th>Categoria</th><th>Acciones</th></tr></thead><tbody id="statuses-body"></tbody></table></div></article></div>
+</section>
+</main>
+<dialog id="edit-dialog"><form class="modal" id="edit-form" method="dialog"><h2 id="form-title">Editar empleado</h2><div class="form-grid"><label>Nombre<input name="nombre" required></label><label>Apellido paterno<input name="apellidoPaterno" required></label><label>Apellido materno<input name="apellidoMaterno"></label><label>Fecha de nacimiento<input name="fechaNacimiento" type="date" required></label><label>Fecha de ingreso<input name="fechaIngreso" type="date" required></label><label>Correo institucional<input name="correoInstitucional" type="email" required></label><label>Telefono celular<input name="telefonoCelular"></label><label>Sexo<select name="idSexo" id="sexos" required></select></label><label>Departamento<select name="idDepto" id="departamentos" required></select></label><label>Puesto<select name="idPuesto" id="puestos" required></select></label><label>Estatus<select name="idEstatus" id="estatuses" required></select></label><label>Calle<input name="calle" required></label><label>Codigo postal<input name="codigoPostal" maxlength="5" required></label><label>Numero exterior<input name="numeroExterior" required></label><label>Numero interior<input name="numeroInterior"></label><label>Estado<select name="idEstado" id="estados-domicilio" required></select></label></div><div class="modal-actions"><button value="cancel" type="button" id="cancel">Cancelar</button><button class="primary" value="submit" type="submit">Guardar cambios</button></div></form></dialog>
+<dialog id="detail-dialog"><article class="detail-modal"><div class="detail-heading"><div><p class="eyebrow">Ficha de personal</p><h2 id="detail-name">Empleado</h2></div><button type="button" id="close-detail">Cerrar</button></div><div id="employee-detail" class="detail-content"></div></article></dialog>
+<script>
+const api='resources/empleados', $=s=>document.querySelector(s), option=(v,l)=>`<option value="${v}">${l}</option>`;
+let employees=[], catalogs={departamentos:[],puestos:[],sexos:[],estatuses:[],estados:[]},admin={},editingId;
+const fullName=e=>[e.nombre,e.apellidoPaterno,e.apellidoMaterno].filter(Boolean).join(' '), employeeLabel=e=>`${fullName(e)} (#${e.idEmpleado})`, formData=f=>Object.fromEntries(new FormData(f));
+const request=(url,method='GET',body)=>fetch(url,{method,headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});
+const statusOptions=list=>list.map(x=>option(x.idEstatus,`${x.idEstatus} - ${x.descripcion}`)).join('');
+async function load(){try{const r=await Promise.all([request(api),request(`${api}/catalogos`)]);if(r.some(x=>!x.ok))throw Error('No se pudieron cargar los empleados.');employees=await r[0].json();catalogs=await r[1].json();renderEmployees();fillEmployeeCatalogs();await loadAdmin();}catch(e){$('#employees').innerHTML=`<tr><td class="error" colspan="6">${e.message}</td></tr>`;}}
+async function loadAdmin(){try{const r=await Promise.all([request('resources/catalogos/cursos'),request('resources/catalogos/paises'),request('resources/catalogos/estados'),request('resources/catalogos/departamentos'),request('resources/catalogos/puestos'),request('resources/catalogos/estatus?categoria=GENERAL'),request('resources/empleado-cursos')]);if(r.some(x=>!x.ok))throw Error('No se pudieron cargar los catalogos.');const v=await Promise.all(r.map(x=>x.json()));[admin.courses,admin.countries,admin.states,admin.departments,admin.positions,admin.generalStatuses,admin.assignments]=v;renderAdmin();}catch(e){console.error(e);}}
+function renderEmployees(){ $('#count').textContent=`${employees.length} empleados`;$('#employees').innerHTML=employees.length?employees.map(e=>`<tr><td><div class="name">${fullName(e)}</div><small>${e.correoInstitucional}</small></td><td>${e.telefonoCelular||'Sin telefono'}</td><td>${e.departamento.descripcion}</td><td>${e.puesto.descripcionPuesto}</td><td><span class="status ${e.estatus.idEstatus}">${e.estatus.idEstatus}</span></td><td class="actions"><button data-detail="${e.idEmpleado}" type="button">Ver detalle</button><button data-edit="${e.idEmpleado}" type="button">Editar</button><button data-delete="${e.idEmpleado}" class="danger" type="button">Dar de baja</button></td></tr>`).join(''):'<tr><td class="empty" colspan="6">No hay empleados registrados.</td></tr>'; }
+function fillEmployeeCatalogs(){$('#sexos').innerHTML=catalogs.sexos.map(x=>option(x.idSexo,x.descripcion)).join('');$('#departamentos').innerHTML=catalogs.departamentos.map(x=>option(x.idDepto,x.descripcion)).join('');$('#puestos').innerHTML=catalogs.puestos.map(x=>option(x.idPuesto,x.descripcionPuesto)).join('');$('#estatuses').innerHTML=statusOptions(catalogs.estatuses);$('#estados-domicilio').innerHTML=catalogs.estados.map(x=>option(x.idEstado,`${x.nombre} - ${x.pais.nombre}`)).join('');}
+function fillGeneralStatuses(){document.querySelectorAll('.general-status').forEach(s=>s.innerHTML=statusOptions(admin.generalStatuses));}
+function renderAdmin(){fillGeneralStatuses();$('#course-status').innerHTML=statusOptions(admin.generalStatuses);$('#assignment-employee').innerHTML=employees.map(e=>option(e.idEmpleado,employeeLabel(e))).join('');$('#assignment-course').innerHTML=admin.courses.filter(x=>x.idEstatus==='ACTIVO').map(x=>option(x.idCurso,x.nombre)).join('');$('#state-country').innerHTML=admin.countries.filter(x=>x.idEstatus==='ACTIVO').map(x=>option(x.idPais,x.nombre)).join('');
+$('#courses-body').innerHTML=admin.courses.map(x=>`<tr><td>${x.nombre}<br><small>${x.descripcion||''}</small></td><td><span class="status ${x.idEstatus}">${x.idEstatus}</span></td><td class="actions"><button data-edit-course="${x.idCurso}" type="button">Editar</button><button data-toggle-course="${x.idCurso}" type="button">${x.idEstatus==='ACTIVO'?'Desactivar':'Activar'}</button></td></tr>`).join('');
+$('#countries-body').innerHTML=admin.countries.map(x=>`<tr><td>${x.idPais}</td><td>${x.nombre}</td><td><span class="status ${x.idEstatus}">${x.idEstatus}</span></td><td class="actions"><button data-edit-country="${x.idPais}" type="button">Editar</button><button data-delete-country="${x.idPais}" class="danger" type="button">Desactivar</button></td></tr>`).join('');
+$('#states-body').innerHTML=admin.states.map(x=>`<tr><td>${x.idEstado}</td><td>${x.nombre}</td><td>${x.pais.nombre}</td><td><span class="status ${x.idEstatus}">${x.idEstatus}</span></td><td class="actions"><button data-edit-state="${x.idEstado}" type="button">Editar</button><button data-delete-state="${x.idEstado}" class="danger" type="button">Desactivar</button></td></tr>`).join('');
+$('#departments-body').innerHTML=admin.departments.map(x=>`<tr><td>${x.descripcion}</td><td><span class="status ${x.idEstatus}">${x.idEstatus}</span></td><td class="actions"><button data-edit-department="${x.idDepto}" type="button">Editar</button><button data-delete-department="${x.idDepto}" class="danger" type="button">Desactivar</button></td></tr>`).join('');
+$('#positions-body').innerHTML=admin.positions.map(x=>`<tr><td>${x.descripcionPuesto}</td><td><span class="status ${x.idEstatus}">${x.idEstatus}</span></td><td class="actions"><button data-edit-position="${x.idPuesto}" type="button">Editar</button><button data-delete-position="${x.idPuesto}" class="danger" type="button">Desactivar</button></td></tr>`).join('');
+const all=[...catalogs.estatuses,...admin.generalStatuses].filter((x,i,a)=>a.findIndex(y=>y.idEstatus===x.idEstatus)===i);$('#statuses-body').innerHTML=all.map(x=>`<tr><td>${x.idEstatus}</td><td>${x.descripcion}</td><td>${x.categoria}</td><td><button data-edit-status="${x.idEstatus}" type="button">Editar</button></td></tr>`).join('');$('#assignments-body').innerHTML=admin.assignments.map(x=>`<tr><td>${employeeLabel(x.empleado)}</td><td>${x.curso.nombre}</td><td>${x.fechaInicio||''}</td><td>${x.fechaFin||'En curso'}</td></tr>`).join('');}
+function resetForm(f){f.reset();if(f.elements.editingId)f.elements.editingId.value='';}
+function editForm(f,item,id){f.reset();if(f.elements.editingId)f.elements.editingId.value=id;Object.keys(item).forEach(k=>{if(f.elements[k])f.elements[k].value=item[k]??'';});if(item.pais&&f.elements.idPais)f.elements.idPais.value=item.pais.idPais;fillGeneralStatuses();if(f.elements.idEstatus)f.elements.idEstatus.value=item.idEstatus;}
+async function saveCatalog(f,path){const data=formData(f),id=data.editingId;delete data.editingId;const r=await request(`resources/catalogos/${path}${id?`/${id}`:''}`,id?'PUT':'POST',data);if(!r.ok){alert(await r.text()||'No fue posible guardar.');return;}resetForm(f);loadAdmin();}
+async function toggle(path,id){if(!confirm('¿Deseas desactivar este registro?'))return;const r=await request(`resources/catalogos/${path}/${id}`,'DELETE');if(!r.ok)alert(await r.text()||'No fue posible desactivar.');loadAdmin();}
+$('#employees').addEventListener('click',e=>{const id=Number(e.target.dataset.edit||e.target.dataset.detail||e.target.dataset.delete),item=employees.find(x=>x.idEmpleado===id);if(e.target.dataset.edit)openEditor(item);if(e.target.dataset.detail)openDetail(item);if(e.target.dataset.delete&&confirm('¿Dar de baja a este empleado?'))request(`${api}/${id}`,'DELETE').then(load);});
+function openEditor(e){editingId=e?.idEmpleado;const f=$('#edit-form');f.reset();$('#form-title').textContent=e?'Editar empleado':'Nuevo empleado';fillEmployeeCatalogs();if(e){Object.keys(e).forEach(k=>{if(f.elements[k])f.elements[k].value=e[k]??'';});f.elements.idSexo.value=e.sexo.idSexo;f.elements.idDepto.value=e.departamento.idDepto;f.elements.idPuesto.value=e.puesto.idPuesto;f.elements.idEstatus.value=e.estatus.idEstatus;f.elements.calle.value=e.domicilio.calle||'';f.elements.codigoPostal.value=e.domicilio.codigoPostal||'';f.elements.numeroExterior.value=e.domicilio.numeroExterior||'';f.elements.numeroInterior.value=e.domicilio.numeroInterior||'';f.elements.idEstado.value=e.domicilio.estado.idEstado;}$('#edit-dialog').showModal();}
+async function openDetail(e){const r=await request(`resources/empleado-cursos/empleado/${e.idEmpleado}`),courses=r.ok?await r.json():[];$('#detail-name').textContent=fullName(e);$('#employee-detail').innerHTML=`<div class="detail-grid"><section class="detail-section"><h3>Datos personales</h3><p>${fullName(e)}</p><p>Nacimiento: ${e.fechaNacimiento}</p><p>Sexo: ${e.sexo.descripcion}</p></section><section class="detail-section"><h3>Contacto y puesto</h3><p>${e.correoInstitucional}</p><p>${e.departamento.descripcion}</p><p>${e.puesto.descripcionPuesto}</p><p>Estatus: ${e.estatus.idEstatus}</p></section><section class="detail-section"><h3>Domicilio</h3><p>${e.domicilio.calle}, ${e.domicilio.estado.nombre}, ${e.domicilio.estado.pais.nombre}</p></section><section class="detail-section detail-courses"><h3>Cursos inscritos</h3>${courses.length?courses.map(x=>`<p><strong>${x.curso.nombre}</strong> ${x.fechaInicio} - ${x.fechaFin||'En curso'}</p>`).join(''):'<p class="muted">No tiene cursos inscritos.</p>'}</section></div>`;$('#detail-dialog').showModal();}
+$('#edit-form').addEventListener('submit',async e=>{e.preventDefault();const r=await request(editingId?`${api}/${editingId}`:api,editingId?'PUT':'POST',formData(e.target));if(!r.ok){alert(await r.text()||'No fue posible guardar.');return;}$('#edit-dialog').close();load();});$('#cancel').addEventListener('click',()=>$('#edit-dialog').close());$('#close-detail').addEventListener('click',()=>$('#detail-dialog').close());$('#new-employee').addEventListener('click',()=>openEditor());$('#refresh').addEventListener('click',load);
+$('#course-form').addEventListener('submit',async e=>{e.preventDefault();const d=formData(e.target),id=d.idCurso;delete d.idCurso;const r=await request(`resources/catalogos/cursos${id?`/${id}`:''}`,id?'PUT':'POST',d);if(!r.ok){alert(await r.text()||'No fue posible guardar el curso.');return;}e.target.reset();loadAdmin();});$('#courses-body').addEventListener('click',e=>{const id=Number(e.target.dataset.editCourse||e.target.dataset.toggleCourse),x=admin.courses.find(y=>y.idCurso===id);if(e.target.dataset.editCourse){const f=$('#course-form');f.elements.idCurso.value=x.idCurso;f.elements.nombre.value=x.nombre;f.elements.descripcion.value=x.descripcion||'';f.elements.idEstatus.value=x.idEstatus;}if(e.target.dataset.toggleCourse)request(`resources/catalogos/cursos/${id}`,'PUT',{nombre:x.nombre,descripcion:x.descripcion,idEstatus:x.idEstatus==='ACTIVO'?'INACTIVO':'ACTIVO'}).then(loadAdmin);});
+$('#assignment-form').addEventListener('submit',async e=>{e.preventDefault();const d=formData(e.target);if($('#ongoing-course').checked)d.fechaFin=null;const r=await request('resources/empleado-cursos','POST',d);if(!r.ok){alert(await r.text()||'No fue posible asignar el curso.');return;}e.target.reset();$('#ongoing-course').checked=true;$('#assignment-form [name="fechaFin"]').disabled=true;loadAdmin();});$('#ongoing-course').addEventListener('change',e=>{const f=$('#assignment-form [name="fechaFin"]');f.disabled=e.target.checked;if(e.target.checked)f.value='';});$('#assignment-form [name="fechaFin"]').disabled=true;
+$('#country-form').addEventListener('submit',e=>{e.preventDefault();saveCatalog(e.target,'paises');});$('#state-form').addEventListener('submit',e=>{e.preventDefault();saveCatalog(e.target,'estados');});$('#department-form').addEventListener('submit',e=>{e.preventDefault();saveCatalog(e.target,'departamentos');});$('#position-form').addEventListener('submit',e=>{e.preventDefault();saveCatalog(e.target,'puestos');});
+$('#status-form').addEventListener('submit',async e=>{e.preventDefault();const d=formData(e.target),id=d.editingId;delete d.editingId;const r=await request(id?`resources/catalogos/estatus/${id}`:'resources/catalogos/estatus',id?'PUT':'POST',d);if(!r.ok){alert(await r.text()||'No fue posible guardar el estatus.');return;}resetForm(e.target);e.target.elements.idEstatus.disabled=false;load();});
+$('#cancel-country').addEventListener('click',()=>resetForm($('#country-form')));$('#cancel-state').addEventListener('click',()=>resetForm($('#state-form')));$('#cancel-department').addEventListener('click',()=>resetForm($('#department-form')));$('#cancel-position').addEventListener('click',()=>resetForm($('#position-form')));$('#cancel-status').addEventListener('click',()=>{resetForm($('#status-form'));$('#status-form').elements.idEstatus.disabled=false;});
+$('#locations-panel').addEventListener('click',e=>{const c=e.target.dataset.editCountry||e.target.dataset.deleteCountry,s=e.target.dataset.editState||e.target.dataset.deleteState;if(e.target.dataset.editCountry)editForm($('#country-form'),admin.countries.find(x=>x.idPais===c),c);if(e.target.dataset.deleteCountry)toggle('paises',c);if(e.target.dataset.editState)editForm($('#state-form'),admin.states.find(x=>x.idEstado===s),s);if(e.target.dataset.deleteState)toggle('estados',s);});$('#jobs-panel').addEventListener('click',e=>{const d=e.target.dataset.editDepartment||e.target.dataset.deleteDepartment,p=e.target.dataset.editPosition||e.target.dataset.deletePosition;if(e.target.dataset.editDepartment)editForm($('#department-form'),admin.departments.find(x=>x.idDepto===Number(d)),d);if(e.target.dataset.deleteDepartment)toggle('departamentos',d);if(e.target.dataset.editPosition)editForm($('#position-form'),admin.positions.find(x=>x.idPuesto===Number(p)),p);if(e.target.dataset.deletePosition)toggle('puestos',p);});
+$('#statuses-panel').addEventListener('click',e=>{const id=e.target.dataset.editStatus;if(!id)return;const item=[...catalogs.estatuses,...admin.generalStatuses].find(x=>x.idEstatus===id),form=$('#status-form');form.elements.editingId.value=item.idEstatus;form.elements.idEstatus.value=item.idEstatus;form.elements.idEstatus.disabled=true;form.elements.descripcion.value=item.descripcion;form.elements.categoria.value=item.categoria;});
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(`#${b.dataset.view}`).classList.add('active');if(b.dataset.view!=='employees-view')loadAdmin();}));document.querySelectorAll('[data-catalog]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.subtabs button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.catalog-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(`#${b.dataset.catalog}`).classList.add('active');}));$('#reload-courses').addEventListener('click',loadAdmin);$('#reload-catalogs').addEventListener('click',loadAdmin);load();
+</script>
+</body>
+</html>

@@ -136,6 +136,9 @@ Las clases `Request` son objetos simples que reciben el JSON enviado por el nave
 - `CursoRequest`: `nombre`, `descripcion` e `idEstatus`.
 - `PaisRequest`: `idPais`, `nombre` e `idEstatus`.
 - `EstadoRequest`: `idEstado`, `nombre`, `idPais` e `idEstatus`.
+- `DepartamentoRequest`: `descripcion` e `idEstatus`.
+- `PuestoRequest`: `descripcionPuesto` e `idEstatus`.
+- `EstatusRequest`: `idEstatus`, `descripcion` y `categoria`.
 - `EmpleadoCursoRequest`: `idEmpleado`, `idCurso`, `fechaInicio` y `fechaFin`.
 
 Los getters y setters permiten que Jakarta REST convierta automaticamente JSON a objetos Java y viceversa.
@@ -242,6 +245,8 @@ Ruta base: `/resources/catalogos`
 | HTTP | Ruta | Funcion |
 | --- | --- | --- |
 | GET | `/estatus` | Lista estatus ordenados por categoria y descripcion. |
+| POST | `/estatus` | Crea un estatus con una clave, descripcion y categoria. |
+| PUT | `/estatus/{id}` | Edita descripcion y categoria; la clave no cambia. |
 | GET | `/cursos` | Lista cursos ordenados por nombre. |
 | POST | `/cursos` | Crea un curso. |
 | PUT | `/cursos/{id}` | Modifica un curso. |
@@ -252,8 +257,22 @@ Ruta base: `/resources/catalogos`
 | GET | `/estados` | Lista estados incluyendo su pais mediante `join fetch`. |
 | POST | `/estados` | Crea un estado asociado a un pais. |
 | PUT | `/estados/{id}` | Modifica nombre, pais y estatus de un estado. |
+| DELETE | `/paises/{id}` | Cambia el pais a `INACTIVO`; no lo borra fisicamente. |
+| DELETE | `/estados/{id}` | Cambia el estado a `INACTIVO`; no lo borra fisicamente. |
+| GET | `/departamentos` | Lista departamentos con su estatus. |
+| POST | `/departamentos` | Crea un departamento. |
+| PUT | `/departamentos/{id}` | Edita descripcion y estatus. |
+| DELETE | `/departamentos/{id}` | Cambia el departamento a `INACTIVO`. |
+| GET | `/puestos` | Lista puestos con su estatus. |
+| POST | `/puestos` | Crea un puesto. |
+| PUT | `/puestos/{id}` | Edita descripcion y estatus. |
+| DELETE | `/puestos/{id}` | Cambia el puesto a `INACTIVO`. |
 
 Este recurso inyecta directamente `EntityManager` con `@PersistenceContext`. Los metodos de escritura tienen `@Transactional`, por lo que los cambios se confirman como una unidad.
+
+El endpoint `/estatus` acepta el parametro opcional `categoria`. Por ejemplo, `/estatus?categoria=GENERAL` devuelve solamente los estatus validos para paises, estados, puestos, departamentos y cursos. La categoria `EMPLEADO` se utiliza para los estatus de empleados.
+
+Las tablas `departamento` y `puesto` utilizan columnas Oracle `IDENTITY`. Sus altas se realizan mediante SQL nativo para evitar que EclipseLink intente usar una secuencia inexistente llamada `SEQ_GEN_IDENTITY`.
 
 ### `EmpleadoCursosResource`
 
@@ -281,7 +300,10 @@ Tiene tres secciones controladas por botones con `data-view`:
 
 1. **Empleados**: tabla, alta, edicion, detalle y baja logica.
 2. **Cursos y asignaciones**: alta y activacion/desactivacion de cursos, y asignacion a empleados.
-3. **Catalogos**: alta de paises y estados, y consulta de estatus.
+3. **Catalogos**: contiene tres subsecciones separadas:
+  - **Paises y estados**: alta, edicion y desactivacion.
+  - **Puestos y departamentos**: alta, edicion y desactivacion; los IDs no se muestran en las tablas.
+  - **Estatus**: alta y edicion de descripcion y categoria. La clave se captura al crear y queda protegida al editar.
 
 ### Variables principales
 
@@ -294,14 +316,16 @@ Tiene tres secciones controladas por botones con `data-view`:
 
 - `load()`: carga empleados y catalogos en paralelo. Despues llama a `render()` y `loadAdmin()`.
 - `render()`: convierte el arreglo de empleados en filas HTML.
-- `loadAdmin()`: carga cursos, paises, estados y asignaciones usando `Promise.all`.
-- `renderAdmin(...)`: llena selects y tablas de administracion y conecta el cambio de estatus de cursos.
+- `loadAdmin()`: carga cursos, paises, estados, departamentos, puestos, estatus generales y asignaciones usando `Promise.all`.
+- `renderAdmin(...)`: llena selects y tablas de administracion y conecta las acciones de edicion, activacion y desactivacion.
 - `fillCatalogs()`: llena los selects del formulario de empleados.
 - `openEditor(employee)`: abre el dialogo para crear o editar. Si recibe un empleado, copia sus datos y relaciones al formulario.
 - `openDetail(employee)`: abre la ficha, muestra los datos del empleado y consulta sus cursos con `/empleado-cursos/empleado/{id}`.
 - `fullName(employee)`: combina nombre y apellidos.
 - `statusOptions()`: construye las opciones de estatus.
 - `employeeLabel(employee)`: crea el texto que aparece en el selector de empleados.
+
+La funcion `saveCatalog(...)` decide entre `POST` para altas y `PUT` para ediciones. Las funciones `toggle(...)` desactivan registros mediante `DELETE`, pero el backend cambia su estatus a `INACTIVO` para conservar las relaciones existentes.
 
 ### Como se guarda un empleado desde la pantalla
 
@@ -385,6 +409,18 @@ Boton Ver detalle
  -> se combinan datos personales, domicilio y cursos
  -> se muestra el dialogo de detalle
 ```
+
+### Alta y edicion de estatus
+
+```text
+Formulario de estatus
+ -> POST /resources/catalogos/estatus              (nuevo)
+ -> PUT /resources/catalogos/estatus/{clave}       (existente)
+ -> CatEstatus actualizado
+ -> load() recarga los estatus y sus selects por categoria
+```
+
+La clave del estatus funciona como identificador y como referencia foranea, por eso solamente la descripcion y la categoria son editables.
 
 ## 10. Construccion y ejecucion
 

@@ -118,12 +118,12 @@ public class EmpleadoService {
 
     public Catalogos catalogos() {
         return new Catalogos(
-                entityManager.createQuery("select d from Departamento d order by d.descripcion", Departamento.class).getResultList(),
-                entityManager.createQuery("select p from Puesto p order by p.descripcionPuesto", Puesto.class).getResultList(),
+                entityManager.createQuery("select d from Departamento d where d.idEstatus = 'ACTIVO' order by d.descripcion", Departamento.class).getResultList(),
+                entityManager.createQuery("select p from Puesto p where p.idEstatus = 'ACTIVO' order by p.descripcionPuesto", Puesto.class).getResultList(),
                 entityManager.createQuery("select s from Sexo s order by s.descripcion", Sexo.class).getResultList(),
                 entityManager.createQuery("select e from CatEstatus e order by e.descripcion", CatEstatus.class).getResultList(),
                 entityManager.createQuery("select d from Domicilio d join fetch d.estado order by d.idDomicilio", Domicilio.class).getResultList(),
-                entityManager.createQuery("select e from Estado e join fetch e.pais order by e.nombre", Estado.class).getResultList());
+                entityManager.createQuery("select e from Estado e join fetch e.pais where e.idEstatus = 'ACTIVO' and e.pais.idEstatus = 'ACTIVO' order by e.nombre", Estado.class).getResultList());
     }
 
     public record Catalogos(List<Departamento> departamentos, List<Puesto> puestos, List<Sexo> sexos, List<CatEstatus> estatuses, List<Domicilio> domicilios, List<Estado> estados) { }
