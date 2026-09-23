@@ -17,7 +17,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 @Path("empleados")
-@Produces(MediaType.APPLICATION_JSON)
+@Produces("application/json; charset=UTF-8")
 @Consumes(MediaType.APPLICATION_JSON)
 public class EmpleadosResource {
 

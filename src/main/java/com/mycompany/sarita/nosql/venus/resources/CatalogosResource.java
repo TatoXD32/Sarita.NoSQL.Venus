@@ -6,12 +6,14 @@ import com.mycompany.sarita.nosql.venus.model.Estado;
 import com.mycompany.sarita.nosql.venus.model.Departamento;
 import com.mycompany.sarita.nosql.venus.model.Pais;
 import com.mycompany.sarita.nosql.venus.model.Puesto;
+import com.mycompany.sarita.nosql.venus.model.Sexo;
 import com.mycompany.sarita.nosql.venus.service.CursoRequest;
 import com.mycompany.sarita.nosql.venus.service.DepartamentoRequest;
 import com.mycompany.sarita.nosql.venus.service.EstadoRequest;
 import com.mycompany.sarita.nosql.venus.service.EstatusRequest;
 import com.mycompany.sarita.nosql.venus.service.PaisRequest;
 import com.mycompany.sarita.nosql.venus.service.PuestoRequest;
+import com.mycompany.sarita.nosql.venus.service.SexoRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -27,13 +29,18 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import java.util.Locale;
 
 @Path("catalogos")
-@Produces(MediaType.APPLICATION_JSON)
+@Produces("application/json; charset=UTF-8")
 @Consumes(MediaType.APPLICATION_JSON)
 public class CatalogosResource {
     @PersistenceContext(unitName = "my_persistence_unit")
     private EntityManager entityManager;
+
+    private String normalizeText(String value) {
+        return value == null ? null : value.trim().toUpperCase(Locale.ROOT);
+    }
 
     @GET
     @Path("estatus")
@@ -79,13 +86,19 @@ public class CatalogosResource {
     @Path("cursos")
     @Transactional
     public Response crearCurso(CursoRequest request) {
+        String nombre = normalizeText(request.getNombre());
+        String descripcion = normalizeText(request.getDescripcion());
+        String idEstatus = normalizeText(request.getIdEstatus());
+        if (idEstatus == null || idEstatus.isBlank()) {
+            idEstatus = "ACTIVO";
+        }
         entityManager.createNativeQuery("insert into curso (nombre, descripcion, id_estatus) values (?, ?, ?)")
-            .setParameter(1, request.getNombre())
-            .setParameter(2, request.getDescripcion())
-            .setParameter(3, request.getIdEstatus())
+            .setParameter(1, nombre)
+            .setParameter(2, descripcion)
+            .setParameter(3, idEstatus)
             .executeUpdate();
-        Curso curso = entityManager.createQuery("select c from Curso c where c.nombre = :nombre", Curso.class)
-            .setParameter("nombre", request.getNombre()).getSingleResult();
+        Curso curso = entityManager.createQuery("select c from Curso c where upper(c.nombre) = :nombre", Curso.class)
+            .setParameter("nombre", nombre).getSingleResult();
         return Response.status(Response.Status.CREATED).entity(curso).build();
     }
 
@@ -95,9 +108,9 @@ public class CatalogosResource {
     public Response actualizarCurso(@PathParam("id") Long id, CursoRequest request) {
         Curso curso = entityManager.find(Curso.class, id);
         if (curso == null) return Response.status(Response.Status.NOT_FOUND).build();
-        curso.setNombre(request.getNombre());
-        curso.setDescripcion(request.getDescripcion());
-        curso.setIdEstatus(request.getIdEstatus());
+        curso.setNombre(normalizeText(request.getNombre()));
+        curso.setDescripcion(normalizeText(request.getDescripcion()));
+        curso.setIdEstatus(normalizeText(request.getIdEstatus()));
         return Response.ok(curso).build();
     }
 
@@ -121,12 +134,17 @@ public class CatalogosResource {
     @Path("departamentos")
     @Transactional
     public Response crearDepartamento(DepartamentoRequest request) {
+        String descripcion = normalizeText(request.getDescripcion());
+        String idEstatus = normalizeText(request.getIdEstatus());
+        if (idEstatus == null || idEstatus.isBlank()) {
+            idEstatus = "ACTIVO";
+        }
         entityManager.createNativeQuery("insert into departamento (descripcion, id_estatus) values (?, ?)")
-            .setParameter(1, request.getDescripcion())
-            .setParameter(2, request.getIdEstatus())
+            .setParameter(1, descripcion)
+            .setParameter(2, idEstatus)
             .executeUpdate();
-        Departamento departamento = entityManager.createQuery("select d from Departamento d where d.descripcion = :descripcion", Departamento.class)
-            .setParameter("descripcion", request.getDescripcion()).getSingleResult();
+        Departamento departamento = entityManager.createQuery("select d from Departamento d where upper(d.descripcion) = :descripcion", Departamento.class)
+            .setParameter("descripcion", descripcion).getSingleResult();
         return Response.status(Response.Status.CREATED).entity(departamento).build();
     }
 
@@ -136,8 +154,8 @@ public class CatalogosResource {
     public Response actualizarDepartamento(@PathParam("id") Long id, DepartamentoRequest request) {
         Departamento departamento = entityManager.find(Departamento.class, id);
         if (departamento == null) return Response.status(Response.Status.NOT_FOUND).build();
-        departamento.setDescripcion(request.getDescripcion());
-        departamento.setIdEstatus(request.getIdEstatus());
+        departamento.setDescripcion(normalizeText(request.getDescripcion()));
+        departamento.setIdEstatus(normalizeText(request.getIdEstatus()));
         return Response.ok(departamento).build();
     }
 
@@ -161,12 +179,17 @@ public class CatalogosResource {
     @Path("puestos")
     @Transactional
     public Response crearPuesto(PuestoRequest request) {
+        String descripcion = normalizeText(request.getDescripcionPuesto());
+        String idEstatus = normalizeText(request.getIdEstatus());
+        if (idEstatus == null || idEstatus.isBlank()) {
+            idEstatus = "ACTIVO";
+        }
         entityManager.createNativeQuery("insert into puesto (descripcion_puesto, id_estatus) values (?, ?)")
-            .setParameter(1, request.getDescripcionPuesto())
-            .setParameter(2, request.getIdEstatus())
+            .setParameter(1, descripcion)
+            .setParameter(2, idEstatus)
             .executeUpdate();
-        Puesto puesto = entityManager.createQuery("select p from Puesto p where p.descripcionPuesto = :descripcion", Puesto.class)
-            .setParameter("descripcion", request.getDescripcionPuesto()).getSingleResult();
+        Puesto puesto = entityManager.createQuery("select p from Puesto p where upper(p.descripcionPuesto) = :descripcion", Puesto.class)
+            .setParameter("descripcion", descripcion).getSingleResult();
         return Response.status(Response.Status.CREATED).entity(puesto).build();
     }
 
@@ -176,8 +199,8 @@ public class CatalogosResource {
     public Response actualizarPuesto(@PathParam("id") Long id, PuestoRequest request) {
         Puesto puesto = entityManager.find(Puesto.class, id);
         if (puesto == null) return Response.status(Response.Status.NOT_FOUND).build();
-        puesto.setDescripcionPuesto(request.getDescripcionPuesto());
-        puesto.setIdEstatus(request.getIdEstatus());
+        puesto.setDescripcionPuesto(normalizeText(request.getDescripcionPuesto()));
+        puesto.setIdEstatus(normalizeText(request.getIdEstatus()));
         return Response.ok(puesto).build();
     }
 
@@ -192,6 +215,43 @@ public class CatalogosResource {
     }
 
     @GET
+    @Path("sexos")
+    public List<Sexo> sexos() {
+        return entityManager.createQuery("select s from Sexo s order by s.descripcion", Sexo.class).getResultList();
+    }
+
+    @POST
+    @Path("sexos")
+    @Transactional
+    public Response crearSexo(SexoRequest request) {
+        Sexo sexo = new Sexo();
+        sexo.setIdSexo(normalizeText(request.getIdSexo()));
+        sexo.setDescripcion(normalizeText(request.getDescripcion()));
+        entityManager.persist(sexo);
+        return Response.status(Response.Status.CREATED).entity(sexo).build();
+    }
+
+    @PUT
+    @Path("sexos/{id}")
+    @Transactional
+    public Response actualizarSexo(@PathParam("id") String id, SexoRequest request) {
+        Sexo sexo = entityManager.find(Sexo.class, id);
+        if (sexo == null) return Response.status(Response.Status.NOT_FOUND).build();
+        sexo.setDescripcion(normalizeText(request.getDescripcion()));
+        return Response.ok(sexo).build();
+    }
+
+    @DELETE
+    @Path("sexos/{id}")
+    @Transactional
+    public Response eliminarSexo(@PathParam("id") String id) {
+        Sexo sexo = entityManager.find(Sexo.class, id);
+        if (sexo == null) return Response.status(Response.Status.NOT_FOUND).build();
+        entityManager.remove(sexo);
+        return Response.noContent().build();
+    }
+
+    @GET
     @Path("paises")
     public List<Pais> paises() {
         return entityManager.createQuery("select p from Pais p order by p.nombre", Pais.class).getResultList();
@@ -201,10 +261,14 @@ public class CatalogosResource {
     @Path("paises")
     @Transactional
     public Response crearPais(PaisRequest request) {
+        String idEstatus = normalizeText(request.getIdEstatus());
+        if (idEstatus == null || idEstatus.isBlank()) {
+            idEstatus = "ACTIVO";
+        }
         Pais pais = new Pais();
-        pais.setIdPais(request.getIdPais());
-        pais.setNombre(request.getNombre());
-        pais.setIdEstatus(request.getIdEstatus());
+        pais.setIdPais(normalizeText(request.getIdPais()));
+        pais.setNombre(normalizeText(request.getNombre()));
+        pais.setIdEstatus(idEstatus);
         entityManager.persist(pais);
         return Response.status(Response.Status.CREATED).entity(pais).build();
     }
@@ -215,8 +279,8 @@ public class CatalogosResource {
     public Response actualizarPais(@PathParam("id") String id, PaisRequest request) {
         Pais pais = entityManager.find(Pais.class, id);
         if (pais == null) return Response.status(Response.Status.NOT_FOUND).build();
-        pais.setNombre(request.getNombre());
-        pais.setIdEstatus(request.getIdEstatus());
+        pais.setNombre(normalizeText(request.getNombre()));
+        pais.setIdEstatus(normalizeText(request.getIdEstatus()));
         return Response.ok(pais).build();
     }
 
@@ -240,11 +304,15 @@ public class CatalogosResource {
     @Path("estados")
     @Transactional
     public Response crearEstado(EstadoRequest request) {
+        String idEstatus = normalizeText(request.getIdEstatus());
+        if (idEstatus == null || idEstatus.isBlank()) {
+            idEstatus = "ACTIVO";
+        }
         Estado estado = new Estado();
-        estado.setIdEstado(request.getIdEstado());
-        estado.setNombre(request.getNombre());
-        estado.setPais(entityManager.getReference(Pais.class, request.getIdPais()));
-        estado.setIdEstatus(request.getIdEstatus());
+        estado.setIdEstado(normalizeText(request.getIdEstado()));
+        estado.setNombre(normalizeText(request.getNombre()));
+        estado.setPais(entityManager.getReference(Pais.class, normalizeText(request.getIdPais())));
+        estado.setIdEstatus(idEstatus);
         entityManager.persist(estado);
         return Response.status(Response.Status.CREATED).entity(estado).build();
     }
@@ -255,9 +323,9 @@ public class CatalogosResource {
     public Response actualizarEstado(@PathParam("id") String id, EstadoRequest request) {
         Estado estado = entityManager.find(Estado.class, id);
         if (estado == null) return Response.status(Response.Status.NOT_FOUND).build();
-        estado.setNombre(request.getNombre());
-        estado.setPais(entityManager.getReference(Pais.class, request.getIdPais()));
-        estado.setIdEstatus(request.getIdEstatus());
+        estado.setNombre(normalizeText(request.getNombre()));
+        estado.setPais(entityManager.getReference(Pais.class, normalizeText(request.getIdPais())));
+        estado.setIdEstatus(normalizeText(request.getIdEstatus()));
         return Response.ok(estado).build();
     }
 
