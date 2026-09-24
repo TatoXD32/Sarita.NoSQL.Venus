@@ -1,5 +1,52 @@
 <section id="employees-view" class="view active">
-    <div class="toolbar"><div><h2>Personal registrado</h2><span id="count">Cargando...</span></div><div class="toolbar-actions"><button id="new-employee" class="primary" type="button">Nuevo empleado</button><button id="refresh" type="button">Actualizar lista</button></div></div>
-    <div class="search-box"><label>Buscar empleado<input id="employee-search" type="search" placeholder="Nombre, correo o departamento"></label></div>
-    <div class="table-wrap"><table><thead><tr><th>Empleado</th><th>Contacto</th><th>Departamento</th><th>Puesto</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="employees"><tr><td class="empty" colspan="6">Cargando empleados...</td></tr></tbody></table></div>
+    <div class="toolbar">
+        <div>
+            <h2>Personal registrado</h2>
+            <span id="count">Cargando...</span>
+        </div>
+        <div class="toolbar-actions">
+            <button id="new-employee" class="primary" type="button">Nuevo empleado</button>
+            <button id="refresh" type="button">Actualizar lista</button>
+        </div>
+    </div>
+
+    <!-- Sección de Búsqueda y Filtros por Catálogo -->
+    <div class="search-box" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.25rem;">
+        <label style="flex: 2; min-width: 220px;">
+            Buscar empleado
+            <input id="employee-search" type="search" placeholder="Nombre, correo o teléfono">
+        </label>
+        <label style="flex: 1; min-width: 180px;">
+            Departamento
+            <select id="filter-depto"></select>
+        </label>
+        <label style="flex: 1; min-width: 180px;">
+            Puesto
+            <select id="filter-puesto"></select>
+        </label>
+        <label style="flex: 1; min-width: 150px;">
+            Estatus
+            <select id="filter-estatus"></select>
+        </label>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Empleado</th>
+                    <th>Contacto</th>
+                    <th>Departamento</th>
+                    <th>Puesto</th>
+                    <th>Estatus</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="employees">
+                <tr>
+                    <td class="empty" colspan="6">Cargando empleados...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </section>
