@@ -67,6 +67,7 @@ public class EmpleadosResource {
     @DELETE
     @Path("{id}")
     public Response darDeBaja(@PathParam("id") Long id) {
-        return service.darDeBaja(id) ? Response.noContent().build() : Response.status(Response.Status.NOT_FOUND).build();
+        return service.darDeBaja(id) ? Response.noContent().build()
+                : Response.status(Response.Status.NOT_FOUND).build();
     }
 }

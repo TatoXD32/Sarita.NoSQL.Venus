@@ -12,8 +12,20 @@ public class Sexo {
     @Column(name = "id_sexo")
     private String idSexo;
     private String descripcion;
-    public String getIdSexo() { return idSexo; }
-    public void setIdSexo(String idSexo) { this.idSexo = idSexo; }
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+
+    public String getIdSexo() {
+        return idSexo;
+    }
+
+    public void setIdSexo(String idSexo) {
+        this.idSexo = idSexo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
 }

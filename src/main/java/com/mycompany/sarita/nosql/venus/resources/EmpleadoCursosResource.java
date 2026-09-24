@@ -28,30 +28,37 @@ public class EmpleadoCursosResource {
 
     @GET
     public List<EmpleadoCurso> listar() {
-        return entityManager.createQuery("select ec from EmpleadoCurso ec join fetch ec.empleado join fetch ec.curso order by ec.fechaInicio desc", EmpleadoCurso.class).getResultList();
+        return entityManager.createQuery(
+                "select ec from EmpleadoCurso ec join fetch ec.empleado join fetch ec.curso order by ec.fechaInicio desc",
+                EmpleadoCurso.class).getResultList();
     }
 
     @GET
     @Path("empleado/{id}")
     public List<EmpleadoCurso> porEmpleado(@PathParam("id") Long id) {
-        return entityManager.createQuery("select ec from EmpleadoCurso ec join fetch ec.empleado join fetch ec.curso where ec.empleado.idEmpleado = :id order by ec.fechaInicio desc", EmpleadoCurso.class)
+        return entityManager.createQuery(
+                "select ec from EmpleadoCurso ec join fetch ec.empleado join fetch ec.curso where ec.empleado.idEmpleado = :id order by ec.fechaInicio desc",
+                EmpleadoCurso.class)
                 .setParameter("id", id).getResultList();
     }
 
     @POST
     @Transactional
     public Response asignar(EmpleadoCursoRequest request) {
-        entityManager.createNativeQuery("insert into empleado_curso (id_empleado, id_curso, fecha_inicio, fecha_fin) values (?, ?, ?, ?)")
-            .setParameter(1, request.getIdEmpleado())
-            .setParameter(2, request.getIdCurso())
-            .setParameter(3, request.getFechaInicio())
-            .setParameter(4, request.getFechaFin())
-            .executeUpdate();
-        EmpleadoCurso asignacion = entityManager.createQuery("select ec from EmpleadoCurso ec where ec.empleado.idEmpleado = :empleado and ec.curso.idCurso = :curso order by ec.idEmpleadoCurso desc", EmpleadoCurso.class)
-            .setParameter("empleado", request.getIdEmpleado())
-            .setParameter("curso", request.getIdCurso())
-            .setMaxResults(1)
-            .getSingleResult();
+        entityManager.createNativeQuery(
+                "insert into empleado_curso (id_empleado, id_curso, fecha_inicio, fecha_fin) values (?, ?, ?, ?)")
+                .setParameter(1, request.getIdEmpleado())
+                .setParameter(2, request.getIdCurso())
+                .setParameter(3, request.getFechaInicio())
+                .setParameter(4, request.getFechaFin())
+                .executeUpdate();
+        EmpleadoCurso asignacion = entityManager.createQuery(
+                "select ec from EmpleadoCurso ec where ec.empleado.idEmpleado = :empleado and ec.curso.idCurso = :curso order by ec.idEmpleadoCurso desc",
+                EmpleadoCurso.class)
+                .setParameter("empleado", request.getIdEmpleado())
+                .setParameter("curso", request.getIdCurso())
+                .setMaxResults(1)
+                .getSingleResult();
         return Response.status(Response.Status.CREATED).entity(asignacion).build();
     }
 
@@ -60,7 +67,8 @@ public class EmpleadoCursosResource {
     @Transactional
     public Response actualizar(@PathParam("id") Long id, EmpleadoCursoRequest request) {
         EmpleadoCurso asignacion = entityManager.find(EmpleadoCurso.class, id);
-        if (asignacion == null) return Response.status(Response.Status.NOT_FOUND).build();
+        if (asignacion == null)
+            return Response.status(Response.Status.NOT_FOUND).build();
         asignacion.setEmpleado(entityManager.getReference(Empleado.class, request.getIdEmpleado()));
         asignacion.setCurso(entityManager.getReference(Curso.class, request.getIdCurso()));
         asignacion.setFechaInicio(request.getFechaInicio());
@@ -73,7 +81,8 @@ public class EmpleadoCursosResource {
     @Transactional
     public Response eliminar(@PathParam("id") Long id) {
         EmpleadoCurso asignacion = entityManager.find(EmpleadoCurso.class, id);
-        if (asignacion == null) return Response.status(Response.Status.NOT_FOUND).build();
+        if (asignacion == null)
+            return Response.status(Response.Status.NOT_FOUND).build();
         entityManager.remove(asignacion);
         return Response.noContent().build();
     }

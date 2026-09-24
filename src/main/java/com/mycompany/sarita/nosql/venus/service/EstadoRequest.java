@@ -5,12 +5,36 @@ public class EstadoRequest {
     private String nombre;
     private String idPais;
     private String idEstatus;
-    public String getIdEstado() { return idEstado; }
-    public void setIdEstado(String idEstado) { this.idEstado = idEstado; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public String getIdPais() { return idPais; }
-    public void setIdPais(String idPais) { this.idPais = idPais; }
-    public String getIdEstatus() { return idEstatus; }
-    public void setIdEstatus(String idEstatus) { this.idEstatus = idEstatus; }
+
+    public String getIdEstado() {
+        return idEstado;
+    }
+
+    public void setIdEstado(String idEstado) {
+        this.idEstado = idEstado;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getIdPais() {
+        return idPais;
+    }
+
+    public void setIdPais(String idPais) {
+        this.idPais = idPais;
+    }
+
+    public String getIdEstatus() {
+        return idEstatus;
+    }
+
+    public void setIdEstatus(String idEstatus) {
+        this.idEstatus = idEstatus;
+    }
 }

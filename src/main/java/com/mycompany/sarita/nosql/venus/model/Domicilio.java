@@ -26,16 +26,52 @@ public class Domicilio {
     @ManyToOne
     @JoinColumn(name = "id_estado", nullable = false)
     private Estado estado;
-    public Long getIdDomicilio() { return idDomicilio; }
-    public void setIdDomicilio(Long idDomicilio) { this.idDomicilio = idDomicilio; }
-    public String getCalle() { return calle; }
-    public void setCalle(String calle) { this.calle = calle; }
-    public String getCodigoPostal() { return codigoPostal; }
-    public void setCodigoPostal(String codigoPostal) { this.codigoPostal = codigoPostal; }
-    public String getNumeroExterior() { return numeroExterior; }
-    public void setNumeroExterior(String numeroExterior) { this.numeroExterior = numeroExterior; }
-    public String getNumeroInterior() { return numeroInterior; }
-    public void setNumeroInterior(String numeroInterior) { this.numeroInterior = numeroInterior; }
-    public Estado getEstado() { return estado; }
-    public void setEstado(Estado estado) { this.estado = estado; }
+
+    public Long getIdDomicilio() {
+        return idDomicilio;
+    }
+
+    public void setIdDomicilio(Long idDomicilio) {
+        this.idDomicilio = idDomicilio;
+    }
+
+    public String getCalle() {
+        return calle;
+    }
+
+    public void setCalle(String calle) {
+        this.calle = calle;
+    }
+
+    public String getCodigoPostal() {
+        return codigoPostal;
+    }
+
+    public void setCodigoPostal(String codigoPostal) {
+        this.codigoPostal = codigoPostal;
+    }
+
+    public String getNumeroExterior() {
+        return numeroExterior;
+    }
+
+    public void setNumeroExterior(String numeroExterior) {
+        this.numeroExterior = numeroExterior;
+    }
+
+    public String getNumeroInterior() {
+        return numeroInterior;
+    }
+
+    public void setNumeroInterior(String numeroInterior) {
+        this.numeroInterior = numeroInterior;
+    }
+
+    public Estado getEstado() {
+        return estado;
+    }
+
+    public void setEstado(Estado estado) {
+        this.estado = estado;
+    }
 }

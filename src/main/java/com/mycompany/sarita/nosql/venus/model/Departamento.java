@@ -17,10 +17,28 @@ public class Departamento {
     private String descripcion;
     @Column(name = "id_estatus")
     private String idEstatus;
-    public Long getIdDepto() { return idDepto; }
-    public void setIdDepto(Long idDepto) { this.idDepto = idDepto; }
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
-    public String getIdEstatus() { return idEstatus; }
-    public void setIdEstatus(String idEstatus) { this.idEstatus = idEstatus; }
+
+    public Long getIdDepto() {
+        return idDepto;
+    }
+
+    public void setIdDepto(Long idDepto) {
+        this.idDepto = idDepto;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public String getIdEstatus() {
+        return idEstatus;
+    }
+
+    public void setIdEstatus(String idEstatus) {
+        this.idEstatus = idEstatus;
+    }
 }

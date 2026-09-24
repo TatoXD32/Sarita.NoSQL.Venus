@@ -71,9 +71,7 @@ CREATE TABLE cat_estatus (
 
 CREATE TABLE sexo (
     id_sexo CHAR(3) PRIMARY KEY,
-    descripcion VARCHAR2(20) NOT NULL UNIQUE,
-    id_estatus VARCHAR2(20) DEFAULT 'ACTIVO' NOT NULL,
-    CONSTRAINT fk_sexo_estatus FOREIGN KEY (id_estatus) REFERENCES cat_estatus(id_estatus)
+    descripcion VARCHAR2(20) NOT NULL UNIQUE
 );
 
 CREATE TABLE pais (
@@ -177,9 +175,9 @@ INSERT INTO cat_estatus (id_estatus, descripcion, categoria) VALUES ('COMISION',
 INSERT INTO cat_estatus (id_estatus, descripcion, categoria) VALUES ('BAJA', 'Baja definitiva', 'EMPLEADO');
 
 -- Sexo (3)
-INSERT INTO sexo (id_sexo, descripcion, id_estatus) VALUES ('M', 'Masculino', 'ACTIVO');
-INSERT INTO sexo (id_sexo, descripcion, id_estatus) VALUES ('F', 'Femenino', 'ACTIVO');
-INSERT INTO sexo (id_sexo, descripcion, id_estatus) VALUES ('X', 'No Binario', 'ACTIVO');
+INSERT INTO sexo (id_sexo, descripcion) VALUES ('M', 'Masculino');
+INSERT INTO sexo (id_sexo, descripcion) VALUES ('F', 'Femenino');
+INSERT INTO sexo (id_sexo, descripcion) VALUES ('X', 'No Binario');
 
 -- País (3)
 INSERT INTO pais (id_pais, nombre, id_estatus) VALUES ('MX', 'México', 'ACTIVO');

@@ -63,21 +63,25 @@ public class EmpleadoService {
 
     @Transactional
     public Empleado crear(EmpleadoRequest datos) {
-        entityManager.createNativeQuery("insert into domicilio (calle, codigo_postal, numero_exterior, numero_interior, id_estado) values (?, ?, ?, ?, ?)")
-            .setParameter(1, datos.getCalle())
-            .setParameter(2, datos.getCodigoPostal())
-            .setParameter(3, datos.getNumeroExterior())
-            .setParameter(4, datos.getNumeroInterior())
-            .setParameter(5, datos.getIdEstado())
-            .executeUpdate();
-        Long idDomicilio = entityManager.createQuery("select d.idDomicilio from Domicilio d where d.calle = :calle and d.codigoPostal = :cp and d.numeroExterior = :exterior and d.estado.idEstado = :estado order by d.idDomicilio desc", Long.class)
-            .setParameter("calle", datos.getCalle())
-            .setParameter("cp", datos.getCodigoPostal())
-            .setParameter("exterior", datos.getNumeroExterior())
-            .setParameter("estado", datos.getIdEstado())
-            .setMaxResults(1)
-            .getSingleResult();
-        entityManager.createNativeQuery("insert into empleado (nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo_institucional, telefono_celular, fecha_ingreso, id_sexo, id_domicilio, id_depto, id_puesto, id_estatus) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+        entityManager.createNativeQuery(
+                "insert into domicilio (calle, codigo_postal, numero_exterior, numero_interior, id_estado) values (?, ?, ?, ?, ?)")
+                .setParameter(1, datos.getCalle())
+                .setParameter(2, datos.getCodigoPostal())
+                .setParameter(3, datos.getNumeroExterior())
+                .setParameter(4, datos.getNumeroInterior())
+                .setParameter(5, datos.getIdEstado())
+                .executeUpdate();
+        Long idDomicilio = entityManager.createQuery(
+                "select d.idDomicilio from Domicilio d where d.calle = :calle and d.codigoPostal = :cp and d.numeroExterior = :exterior and d.estado.idEstado = :estado order by d.idDomicilio desc",
+                Long.class)
+                .setParameter("calle", datos.getCalle())
+                .setParameter("cp", datos.getCodigoPostal())
+                .setParameter("exterior", datos.getNumeroExterior())
+                .setParameter("estado", datos.getIdEstado())
+                .setMaxResults(1)
+                .getSingleResult();
+        entityManager.createNativeQuery(
+                "insert into empleado (nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo_institucional, telefono_celular, fecha_ingreso, id_sexo, id_domicilio, id_depto, id_puesto, id_estatus) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
                 .setParameter(1, datos.getNombre())
                 .setParameter(2, datos.getApellidoPaterno())
                 .setParameter(3, datos.getApellidoMaterno())
@@ -91,12 +95,14 @@ public class EmpleadoService {
                 .setParameter(11, datos.getIdPuesto())
                 .setParameter(12, datos.getIdEstatus())
                 .executeUpdate();
-        return entityManager.createQuery("select e from Empleado e where e.correoInstitucional = :correo", Empleado.class)
+        return entityManager
+                .createQuery("select e from Empleado e where e.correoInstitucional = :correo", Empleado.class)
                 .setParameter("correo", datos.getCorreoInstitucional()).getSingleResult();
     }
 
     private void actualizarDomicilio(Domicilio domicilio, EmpleadoRequest datos) {
-        entityManager.createNativeQuery("update domicilio set calle = ?, codigo_postal = ?, numero_exterior = ?, numero_interior = ?, id_estado = ? where id_domicilio = ?")
+        entityManager.createNativeQuery(
+                "update domicilio set calle = ?, codigo_postal = ?, numero_exterior = ?, numero_interior = ?, id_estado = ? where id_domicilio = ?")
                 .setParameter(1, datos.getCalle())
                 .setParameter(2, datos.getCodigoPostal())
                 .setParameter(3, datos.getNumeroExterior())
@@ -118,13 +124,25 @@ public class EmpleadoService {
 
     public Catalogos catalogos() {
         return new Catalogos(
-                entityManager.createQuery("select d from Departamento d where d.idEstatus = 'ACTIVO' order by d.descripcion", Departamento.class).getResultList(),
-                entityManager.createQuery("select p from Puesto p where p.idEstatus = 'ACTIVO' order by p.descripcionPuesto", Puesto.class).getResultList(),
+                entityManager
+                        .createQuery("select d from Departamento d where d.idEstatus = 'ACTIVO' order by d.descripcion",
+                                Departamento.class)
+                        .getResultList(),
+                entityManager
+                        .createQuery("select p from Puesto p where p.idEstatus = 'ACTIVO' order by p.descripcionPuesto",
+                                Puesto.class)
+                        .getResultList(),
                 entityManager.createQuery("select s from Sexo s order by s.descripcion", Sexo.class).getResultList(),
-                entityManager.createQuery("select e from CatEstatus e order by e.descripcion", CatEstatus.class).getResultList(),
-                entityManager.createQuery("select d from Domicilio d join fetch d.estado order by d.idDomicilio", Domicilio.class).getResultList(),
-                entityManager.createQuery("select e from Estado e join fetch e.pais where e.idEstatus = 'ACTIVO' and e.pais.idEstatus = 'ACTIVO' order by e.nombre", Estado.class).getResultList());
+                entityManager.createQuery("select e from CatEstatus e order by e.descripcion", CatEstatus.class)
+                        .getResultList(),
+                entityManager.createQuery("select d from Domicilio d join fetch d.estado order by d.idDomicilio",
+                        Domicilio.class).getResultList(),
+                entityManager.createQuery(
+                        "select e from Estado e join fetch e.pais where e.idEstatus = 'ACTIVO' and e.pais.idEstatus = 'ACTIVO' order by e.nombre",
+                        Estado.class).getResultList());
     }
 
-    public record Catalogos(List<Departamento> departamentos, List<Puesto> puestos, List<Sexo> sexos, List<CatEstatus> estatuses, List<Domicilio> domicilios, List<Estado> estados) { }
+    public record Catalogos(List<Departamento> departamentos, List<Puesto> puestos, List<Sexo> sexos,
+            List<CatEstatus> estatuses, List<Domicilio> domicilios, List<Estado> estados) {
+    }
 }
