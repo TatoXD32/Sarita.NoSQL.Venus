@@ -12,6 +12,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Locale;
 
 @ApplicationScoped
 public class EmpleadoService {
@@ -30,10 +31,15 @@ public class EmpleadoService {
         return entityManager.find(Empleado.class, id);
     }
 
+    private String normalizeText(String value) {
+        return value == null ? null : value.trim().toUpperCase(Locale.ROOT);
+    }
+
     public boolean correoExiste(String correo, Long idExcluir) {
-        String query = "select count(e) from Empleado e where e.correoInstitucional = :correo"
+        String query = "select count(e) from Empleado e where upper(e.correoInstitucional) = upper(:correo)"
                 + (idExcluir == null ? "" : " and e.idEmpleado <> :id");
-        var typedQuery = entityManager.createQuery(query, Long.class).setParameter("correo", correo);
+        var typedQuery = entityManager.createQuery(query, Long.class)
+                .setParameter("correo", normalizeText(correo));
         if (idExcluir != null) {
             typedQuery.setParameter("id", idExcluir);
         }
@@ -46,68 +52,75 @@ public class EmpleadoService {
         if (empleado == null) {
             return null;
         }
-        empleado.setNombre(datos.getNombre());
-        empleado.setApellidoPaterno(datos.getApellidoPaterno());
-        empleado.setApellidoMaterno(datos.getApellidoMaterno());
+        empleado.setNombre(normalizeText(datos.getNombre()));
+        empleado.setApellidoPaterno(normalizeText(datos.getApellidoPaterno()));
+        empleado.setApellidoMaterno(normalizeText(datos.getApellidoMaterno()));
         empleado.setFechaNacimiento(datos.getFechaNacimiento());
         empleado.setFechaIngreso(datos.getFechaIngreso());
-        empleado.setCorreoInstitucional(datos.getCorreoInstitucional());
-        empleado.setTelefonoCelular(datos.getTelefonoCelular());
-        empleado.setSexo(entityManager.getReference(Sexo.class, datos.getIdSexo()));
+        empleado.setCorreoInstitucional(normalizeText(datos.getCorreoInstitucional()));
+        empleado.setTelefonoCelular(normalizeText(datos.getTelefonoCelular()));
+        empleado.setSexo(entityManager.getReference(Sexo.class, normalizeText(datos.getIdSexo())));
         empleado.setDepartamento(entityManager.getReference(Departamento.class, datos.getIdDepto()));
         empleado.setPuesto(entityManager.getReference(Puesto.class, datos.getIdPuesto()));
-        empleado.setEstatus(entityManager.getReference(CatEstatus.class, datos.getIdEstatus()));
+        empleado.setEstatus(entityManager.getReference(CatEstatus.class, normalizeText(datos.getIdEstatus())));
         actualizarDomicilio(empleado.getDomicilio(), datos);
         return empleado;
     }
 
     @Transactional
     public Empleado crear(EmpleadoRequest datos) {
-        entityManager.createNativeQuery(
-                "insert into domicilio (calle, codigo_postal, numero_exterior, numero_interior, id_estado) values (?, ?, ?, ?, ?)")
-                .setParameter(1, datos.getCalle())
-                .setParameter(2, datos.getCodigoPostal())
-                .setParameter(3, datos.getNumeroExterior())
-                .setParameter(4, datos.getNumeroInterior())
-                .setParameter(5, datos.getIdEstado())
-                .executeUpdate();
-        Long idDomicilio = entityManager.createQuery(
-                "select d.idDomicilio from Domicilio d where d.calle = :calle and d.codigoPostal = :cp and d.numeroExterior = :exterior and d.estado.idEstado = :estado order by d.idDomicilio desc",
-                Long.class)
-                .setParameter("calle", datos.getCalle())
-                .setParameter("cp", datos.getCodigoPostal())
-                .setParameter("exterior", datos.getNumeroExterior())
-                .setParameter("estado", datos.getIdEstado())
-                .setMaxResults(1)
-                .getSingleResult();
-        entityManager.createNativeQuery(
-                "insert into empleado (nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo_institucional, telefono_celular, fecha_ingreso, id_sexo, id_domicilio, id_depto, id_puesto, id_estatus) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-                .setParameter(1, datos.getNombre())
-                .setParameter(2, datos.getApellidoPaterno())
-                .setParameter(3, datos.getApellidoMaterno())
+        String nombre = normalizeText(datos.getNombre());
+        String apellidoPaterno = normalizeText(datos.getApellidoPaterno());
+        String apellidoMaterno = normalizeText(datos.getApellidoMaterno());
+        String calle = normalizeText(datos.getCalle());
+        String correo = normalizeText(datos.getCorreoInstitucional());
+        String telefonoCelular = normalizeText(datos.getTelefonoCelular());
+        String idEstatus = normalizeText(datos.getIdEstatus());
+        if (idEstatus == null || idEstatus.isBlank()) {
+            idEstatus = "ACTIVO";
+        }
+
+        entityManager.createNativeQuery("insert into domicilio (calle, codigo_postal, numero_exterior, numero_interior, id_estado) values (?, ?, ?, ?, ?)")
+            .setParameter(1, calle)
+            .setParameter(2, datos.getCodigoPostal())
+            .setParameter(3, normalizeText(datos.getNumeroExterior()))
+            .setParameter(4, normalizeText(datos.getNumeroInterior()))
+            .setParameter(5, normalizeText(datos.getIdEstado()))
+            .executeUpdate();
+
+        Long idDomicilio = entityManager.createQuery("select d.idDomicilio from Domicilio d where upper(d.calle) = :calle and d.codigoPostal = :cp and upper(d.numeroExterior) = :exterior and upper(d.estado.idEstado) = :estado order by d.idDomicilio desc", Long.class)
+            .setParameter("calle", calle)
+            .setParameter("cp", datos.getCodigoPostal())
+            .setParameter("exterior", normalizeText(datos.getNumeroExterior()))
+            .setParameter("estado", normalizeText(datos.getIdEstado()))
+            .setMaxResults(1)
+            .getSingleResult();
+
+        entityManager.createNativeQuery("insert into empleado (nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo_institucional, telefono_celular, fecha_ingreso, id_sexo, id_domicilio, id_depto, id_puesto, id_estatus) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                .setParameter(1, nombre)
+                .setParameter(2, apellidoPaterno)
+                .setParameter(3, apellidoMaterno)
                 .setParameter(4, datos.getFechaNacimiento())
-                .setParameter(5, datos.getCorreoInstitucional())
-                .setParameter(6, datos.getTelefonoCelular())
+                .setParameter(5, correo)
+                .setParameter(6, telefonoCelular)
                 .setParameter(7, datos.getFechaIngreso())
-                .setParameter(8, datos.getIdSexo())
+                .setParameter(8, normalizeText(datos.getIdSexo()))
                 .setParameter(9, idDomicilio)
                 .setParameter(10, datos.getIdDepto())
                 .setParameter(11, datos.getIdPuesto())
-                .setParameter(12, datos.getIdEstatus())
+                .setParameter(12, idEstatus)
                 .executeUpdate();
-        return entityManager
-                .createQuery("select e from Empleado e where e.correoInstitucional = :correo", Empleado.class)
-                .setParameter("correo", datos.getCorreoInstitucional()).getSingleResult();
+        return entityManager.createQuery("select e from Empleado e where upper(e.correoInstitucional) = upper(:correo)", Empleado.class)
+                .setParameter("correo", correo).getSingleResult();
     }
 
     private void actualizarDomicilio(Domicilio domicilio, EmpleadoRequest datos) {
-        entityManager.createNativeQuery(
-                "update domicilio set calle = ?, codigo_postal = ?, numero_exterior = ?, numero_interior = ?, id_estado = ? where id_domicilio = ?")
-                .setParameter(1, datos.getCalle())
+        entityManager.createNativeQuery("update domicilio set calle = ?, codigo_postal = ?, numero_exterior = ?, numero_interior = ?, id_estado = ? where id_domicilio = ?")
+                .setParameter(1, normalizeText(datos.getCalle()))
                 .setParameter(2, datos.getCodigoPostal())
-                .setParameter(3, datos.getNumeroExterior())
-                .setParameter(4, datos.getNumeroInterior())
-                .setParameter(5, datos.getIdEstado())
+                .setParameter(3, normalizeText(datos.getNumeroExterior()))
+                .setParameter(4, normalizeText(datos.getNumeroInterior()))
+                .setParameter(5, normalizeText(datos.getIdEstado()))
                 .setParameter(6, domicilio.getIdDomicilio())
                 .executeUpdate();
     }

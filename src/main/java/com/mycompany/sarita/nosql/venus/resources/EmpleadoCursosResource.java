@@ -20,7 +20,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 @Path("empleado-cursos")
-@Produces(MediaType.APPLICATION_JSON)
+@Produces("application/json; charset=UTF-8")
 @Consumes(MediaType.APPLICATION_JSON)
 public class EmpleadoCursosResource {
     @PersistenceContext(unitName = "my_persistence_unit")
