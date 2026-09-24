@@ -1,0 +1,22 @@
+<form class="modal" id="edit-form" method="dialog">
+    <h2 id="form-title">Editar empleado</h2>
+    <div class="form-grid">
+        <label>Nombre<input name="nombre" required></label>
+        <label>Apellido paterno<input name="apellidoPaterno" required></label>
+        <label>Apellido materno<input name="apellidoMaterno"></label>
+        <label>Fecha de nacimiento<input name="fechaNacimiento" type="date" required max="2026-09-23"></label>
+        <label>Fecha de ingreso<input name="fechaIngreso" type="date" required></label>
+        <label>Correo institucional<input name="correoInstitucional" type="email" required></label>
+        <label>Telefono celular<input name="telefonoCelular" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required></label>
+        <label>Sexo<select name="idSexo" id="sexos" required></select></label>
+        <label>Departamento<select name="idDepto" id="departamentos" required></select></label>
+        <label>Puesto<select name="idPuesto" id="puestos" required></select></label>
+        <div class="status-field" data-status-field="employee-status"><label>Estatus<select name="idEstatus" id="estatuses" required></select></label></div>
+        <label>Calle<input name="calle" required></label>
+        <label>Codigo postal<input name="codigoPostal" maxlength="5" required></label>
+        <label>Numero exterior<input name="numeroExterior" required></label>
+        <label>Numero interior<input name="numeroInterior"></label>
+        <label>Estado<select name="idEstado" id="estados-domicilio" required></select></label>
+    </div>
+    <div class="modal-actions"><button value="cancel" type="button" id="cancel">Cancelar</button><button class="primary" value="submit" type="submit">Guardar cambios</button></div>
+</form>
