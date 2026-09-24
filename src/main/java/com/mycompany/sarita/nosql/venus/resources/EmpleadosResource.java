@@ -3,6 +3,7 @@ package com.mycompany.sarita.nosql.venus.resources;
 import com.mycompany.sarita.nosql.venus.model.Empleado;
 import com.mycompany.sarita.nosql.venus.service.EmpleadoRequest;
 import com.mycompany.sarita.nosql.venus.service.EmpleadoService;
+import com.mycompany.sarita.nosql.venus.service.EmpleadoValidator;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -37,6 +38,13 @@ public class EmpleadosResource {
 
     @POST
     public Response crear(EmpleadoRequest datos) {
+        var validacion = EmpleadoValidator.validar(datos);
+        if (!validacion.isValido()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .type(MediaType.TEXT_PLAIN)
+                    .entity(String.join("; ", validacion.errores()))
+                    .build();
+        }
         if (service.correoExiste(datos.getCorreoInstitucional(), null)) {
             return Response.status(Response.Status.CONFLICT)
                     .type(MediaType.TEXT_PLAIN)
@@ -55,6 +63,13 @@ public class EmpleadosResource {
     @PUT
     @Path("{id}")
     public Response actualizar(@PathParam("id") Long id, EmpleadoRequest datos) {
+        var validacion = EmpleadoValidator.validar(datos);
+        if (!validacion.isValido()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .type(MediaType.TEXT_PLAIN)
+                    .entity(String.join("; ", validacion.errores()))
+                    .build();
+        }
         if (service.correoExiste(datos.getCorreoInstitucional(), id)) {
             return Response.status(Response.Status.CONFLICT)
                     .type(MediaType.TEXT_PLAIN)

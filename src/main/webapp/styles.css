@@ -52,23 +52,23 @@ body[data-theme="overworld"] {
 }
 
 body[data-theme="nether"] {
-    --header-bg-1: #3a1228;
-    --header-bg-2: #5e1a38;
-    --header-bg-3: #2d0f24;
-    --header-line: #ff6b35;
+    --header-bg-1: #2a0d1b;
+    --header-bg-2: #4b1632;
+    --header-bg-3: #1d0a12;
+    --header-line: #ff7d4d;
     --header-ink: #fce7d7;
     --header-muted: #f1bfd2;
-    --header-glow: rgba(255, 107, 53, 0.25);
-    --main-bg-1: #200b12;
-    --main-bg-2: #2d0f1c;
-    --main-panel: #2d0f1c;
-    --main-panel-strong: #17080d;
+    --header-glow: rgba(255, 125, 77, 0.22);
+    --main-bg-1: #14080e;
+    --main-bg-2: #220d18;
+    --main-panel: #2a1019;
+    --main-panel-strong: #1a0c14;
     --main-ink: #fce7d7;
     --main-muted: #f1bfd2;
-    --main-line: #6d2f46;
-    --main-accent: #ff7d3f;
-    --main-accent-strong: #bf422d;
-    --main-gold: #ffd166;
+    --main-line: #5b2b3d;
+    --main-accent: #a53d54;
+    --main-accent-strong: #7f2e3d;
+    --main-gold: #f7d38a;
 }
 
 body[data-theme="end"] {
@@ -204,7 +204,8 @@ body[data-theme="nether"] .table-wrap,
 body[data-theme="nether"] .toolbar,
 body[data-theme="nether"] .tabs,
 body[data-theme="nether"] .subtabs {
-    background: linear-gradient(180deg, #200b12 0%, #2d0f1c 100%);
+    background: linear-gradient(180deg, rgba(33, 15, 22, 0.96) 0%, rgba(17, 8, 12, 0.98) 100%);
+    border-color: rgba(255, 255, 255, 0.04);
     color: #fce7d7;
 }
 
