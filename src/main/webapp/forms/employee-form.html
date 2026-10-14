@@ -16,7 +16,17 @@
         <label>Codigo postal<input name="codigoPostal" maxlength="5" required></label>
         <label>Numero exterior<input name="numeroExterior" required></label>
         <label>Numero interior<input name="numeroInterior"></label>
-        <label>Estado<select name="idEstado" id="estados-domicilio" required></select></label>
+        
+        <!-- Nuevos Selects Conectados -->
+        <label>País<select name="idPais" id="paises-domicilio" required>
+            <option value="">Seleccione un país...</option>
+        </select></label>
+        <label>Estado<select name="idEstado" id="estados-domicilio" required disabled>
+            <option value="">Seleccione primero un país...</option>
+        </select></label>
     </div>
-    <div class="modal-actions"><button value="cancel" type="button" id="cancel">Cancelar</button><button class="primary" value="submit" type="submit">Guardar cambios</button></div>
+    <div class="modal-actions">
+        <button value="cancel" type="button" id="cancel">Cancelar</button>
+        <button class="primary" value="submit" type="submit">Guardar cambios</button>
+    </div>
 </form>
