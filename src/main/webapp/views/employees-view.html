@@ -1,52 +1,126 @@
+
 <section id="employees-view" class="view active">
+
     <div class="toolbar">
         <div>
-            <h2>Personal registrado</h2>
-            <span id="count">Cargando...</span>
+            <h2>Empleados</h2>
+            <span id="count">Consulta de personal registrado</span>
         </div>
+
         <div class="toolbar-actions">
-            <button id="new-employee" class="primary" type="button">Nuevo empleado</button>
-            <button id="refresh" type="button">Actualizar lista</button>
+            <button id="new-employee" class="primary" type="button">
+                Nuevo empleado
+            </button>
         </div>
     </div>
 
-    <!-- Sección de Búsqueda y Filtros por Catálogo -->
-    <div class="search-box" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.25rem;">
-        <label style="flex: 2; min-width: 220px;">
-            Buscar empleado
-            <input id="employee-search" type="search" placeholder="Nombre, correo o teléfono">
-        </label>
-        <label style="flex: 1; min-width: 180px;">
-            Departamento
-            <select id="filter-depto"></select>
-        </label>
-        <label style="flex: 1; min-width: 180px;">
-            Puesto
-            <select id="filter-puesto"></select>
-        </label>
-        <label style="flex: 1; min-width: 150px;">
-            Estatus
-            <select id="filter-estatus"></select>
-        </label>
+    <!-- Busqueda de empleados -->
+    <div class="search-box employee-search-panel">
+
+        <h3>Buscar empleados</h3>
+
+        <div class="employee-filters">
+
+            <label for="filter-numero">
+                Número de empleado
+                <input
+                    id="filter-numero"
+                    type="text"
+                    placeholder="Número de empleado"
+                    autocomplete="off"
+                >
+            </label>
+
+            <label for="employee-search">
+                Nombre
+                <input
+                    id="employee-search"
+                    type="search"
+                    placeholder="Nombre del empleado"
+                    autocomplete="off"
+                >
+            </label>
+
+            <label for="filter-estatus">
+                Estatus
+                <select id="filter-estatus">
+                    <option value="">Todos</option>
+                </select>
+            </label>
+
+        </div>
+
+        <div class="employee-search-actions">
+            <button id="clear-filters" type="button">
+                Limpiar
+            </button>
+
+            <button id="search-employees" class="primary" type="button">
+                Buscar
+            </button>
+        </div>
+
     </div>
 
+    <!-- Tabla de empleados -->
     <div class="table-wrap">
-        <table>
+
+        <table class="employees-table">
+
             <thead>
                 <tr>
-                    <th>Empleado</th>
-                    <th>Contacto</th>
-                    <th>Departamento</th>
-                    <th>Puesto</th>
+                    <th>No. empleado</th>
+                    <th>Nombre</th>
+                    <th>Correo institucional</th>
                     <th>Estatus</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
+
             <tbody id="employees">
                 <tr>
-                    <td class="empty" colspan="6">Cargando empleados...</td>
+                    <td class="empty" colspan="5">
+                        Captura un filtro y pulsa Buscar
+                        para ver empleados.
+                    </td>
                 </tr>
             </tbody>
+
         </table>
+
     </div>
+
+    <!-- Paginacion -->
+    <div class="employee-pagination">
+
+        <span id="pagination-info">
+            Sin resultados
+        </span>
+
+        <div class="pagination-actions">
+
+            <button
+                id="prev-page"
+                type="button"
+                disabled
+            >
+                Anterior
+            </button>
+
+            <span id="current-page">
+                Página 1 de 1
+            </span>
+
+            <button
+                id="next-page"
+                type="button"
+                disabled
+            >
+                Siguiente
+            </button>
+
+        </div>
+
+    </div>
+
 </section>

@@ -1,32 +1,252 @@
-<form class="modal" id="edit-form" method="dialog">
-    <h2 id="form-title">Editar empleado</h2>
-    <div class="form-grid">
-        <label>Nombre<input name="nombre" required></label>
-        <label>Apellido paterno<input name="apellidoPaterno" required></label>
-        <label>Apellido materno<input name="apellidoMaterno"></label>
-        <label>Fecha de nacimiento<input name="fechaNacimiento" type="date" required max="2026-09-23"></label>
-        <label>Fecha de ingreso<input name="fechaIngreso" type="date" required></label>
-        <label>Correo institucional<input name="correoInstitucional" type="email" required></label>
-        <label>Telefono celular<input name="telefonoCelular" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required></label>
-        <label>Sexo<select name="idSexo" id="sexos" required></select></label>
-        <label>Departamento<select name="idDepto" id="departamentos" required></select></label>
-        <label>Puesto<select name="idPuesto" id="puestos" required></select></label>
-        <div class="status-field" data-status-field="employee-status"><label>Estatus<select name="idEstatus" id="estatuses" required></select></label></div>
-        <label>Calle<input name="calle" required></label>
-        <label>Codigo postal<input name="codigoPostal" maxlength="5" required></label>
-        <label>Numero exterior<input name="numeroExterior" required></label>
-        <label>Numero interior<input name="numeroInterior"></label>
-        
-        <!-- Nuevos Selects Conectados -->
-        <label>País<select name="idPais" id="paises-domicilio" required>
-            <option value="">Seleccione un país...</option>
-        </select></label>
-        <label>Estado<select name="idEstado" id="estados-domicilio" required disabled>
-            <option value="">Seleccione primero un país...</option>
-        </select></label>
+
+<form class="modal employee-form" id="edit-form" method="dialog">
+
+    <h2 id="form-title">Nuevo empleado</h2>
+
+    <!-- Navegación del formulario -->
+    <div class="employee-form-tabs">
+        <button
+            type="button"
+            class="employee-form-tab active"
+            data-employee-step="0"
+            aria-current="step">
+            1. Datos del empleado
+        </button>
+
+        <button
+            type="button"
+            class="employee-form-tab"
+            data-employee-step="1">
+            2. Domicilio
+        </button>
     </div>
-    <div class="modal-actions">
-        <button value="cancel" type="button" id="cancel">Cancelar</button>
-        <button class="primary" value="submit" type="submit">Guardar cambios</button>
+
+    <!-- PASO 1: DATOS DEL EMPLEADO -->
+    <section
+        class="employee-form-step active"
+        data-step="0">
+
+        <h3>Datos personales</h3>
+
+        <div class="form-grid">
+
+            <label>
+                Nombre
+                <input
+                    name="nombre"
+                    type="text"
+                    required
+                    autocomplete="given-name">
+            </label>
+
+            <label>
+                Apellido paterno
+                <input
+                    name="apellidoPaterno"
+                    type="text"
+                    required>
+            </label>
+
+            <label>
+                Apellido materno
+                <input
+                    name="apellidoMaterno"
+                    type="text">
+            </label>
+
+            <label>
+                Fecha de nacimiento
+                <input
+                    name="fechaNacimiento"
+                    type="date"
+                    required>
+            </label>
+
+            <label>
+                Sexo
+                <select
+                    name="idSexo"
+                    id="sexos"
+                    required>
+                </select>
+            </label>
+
+        </div>
+
+        <h3>Información laboral y contacto</h3>
+
+        <div class="form-grid">
+
+            <label>
+                Fecha de ingreso
+                <input
+                    name="fechaIngreso"
+                    type="date"
+                    required>
+            </label>
+
+            <label>
+                Correo institucional
+                <input
+                    name="correoInstitucional"
+                    type="email"
+                    required
+                    autocomplete="email">
+            </label>
+
+            <label>
+                Teléfono celular
+                <input
+                    name="telefonoCelular"
+                    type="tel"
+                    inputmode="numeric"
+                    pattern="[0-9]{10}"
+                    maxlength="10"
+                    required>
+            </label>
+
+            <label>
+                Departamento
+                <select
+                    name="idDepto"
+                    id="departamentos"
+                    required>
+                </select>
+            </label>
+
+            <label>
+                Puesto
+                <select
+                    name="idPuesto"
+                    id="puestos"
+                    required>
+                </select>
+            </label>
+
+            <div
+                class="status-field"
+                data-status-field="employee-status">
+
+                <label>
+                    Estatus
+                    <select
+                        name="idEstatus"
+                        id="estatuses"
+                        required>
+                    </select>
+                </label>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- PASO 2: DOMICILIO -->
+    <section
+        class="employee-form-step"
+        data-step="1"
+        hidden>
+
+        <h3>Información del domicilio</h3>
+
+        <div class="form-grid">
+
+            <label>
+                Calle
+                <input
+                    name="calle"
+                    type="text"
+                    required>
+            </label>
+
+            <label>
+                Número exterior
+                <input
+                    name="numeroExterior"
+                    type="text"
+                    required>
+            </label>
+
+            <label>
+                Número interior
+                <input
+                    name="numeroInterior"
+                    type="text">
+            </label>
+
+            <label>
+                Código postal
+                <input
+                    name="codigoPostal"
+                    type="text"
+                    inputmode="numeric"
+                    pattern="[0-9]{5}"
+                    maxlength="5"
+                    required>
+            </label>
+
+            <label>
+                País
+                <select
+                    name="idPais"
+                    id="paises-domicilio"
+                    required>
+                    <option value="">
+                        Seleccione un país...
+                    </option>
+                </select>
+            </label>
+
+            <label>
+                Estado
+                <select
+                    name="idEstado"
+                    id="estados-domicilio"
+                    required
+                    disabled>
+                    <option value="">
+                        Seleccione primero un país...
+                    </option>
+                </select>
+            </label>
+
+        </div>
+
+    </section>
+
+    <!-- ACCIONES -->
+    <div class="modal-actions employee-form-actions">
+
+        <button
+            type="button"
+            id="cancel"
+            value="cancel">
+            Cancelar
+        </button>
+
+        <button
+            type="button"
+            id="employee-prev"
+            hidden>
+            Anterior
+        </button>
+
+        <button
+            type="button"
+            class="primary"
+            id="employee-next">
+            Siguiente
+        </button>
+
+        <button
+            type="submit"
+            class="primary"
+            id="employee-save"
+            hidden>
+            Guardar
+        </button>
+
     </div>
+
 </form>
