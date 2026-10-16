@@ -1854,10 +1854,27 @@ function bindNavigationEvents() {
         });
     });
 
-    // Salir cierra la vista de la aplicación; no elimina una sesión de servidor.
-    $('#exit-app')?.addEventListener('click', () => {
-        if (window.confirm('¿Deseas salir de la aplicación?')) {
+    // Cerrar la sesión en Payara y regresar al login.
+    $('#exit-app')?.addEventListener('click', async () => {
+        if (!window.confirm('¿Deseas cerrar sesión?')) return;
+
+        try {
+            const response = await fetch('resources/auth/logout', {
+                method: 'POST',
+                credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+                alert('No se pudo cerrar la sesión. Intenta nuevamente.');
+                return;
+            }
+
+            employees = [];
+            admin = {};
             showLoginScreen();
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+            alert('No se pudo cerrar la sesión.');
         }
     });
 
@@ -1968,21 +1985,61 @@ async function showMainApp() {
     document.querySelector('#protected-app').hidden = false;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('#login-form').addEventListener('submit', async event => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const formulario = document.querySelector('#login-form');
+    const errorLogin = document.querySelector('#login-error');
+
+    formulario.addEventListener('submit', async event => {
         event.preventDefault();
 
         const username = document.querySelector('#login-user').value.trim();
         const password = document.querySelector('#login-password').value;
+        const boton = formulario.querySelector('[type="submit"]');
 
-        if (username !== 'admin' || !password) {
-            document.querySelector('#login-error').hidden = false;
-            return;
+        errorLogin.hidden = true;
+        if (boton) boton.disabled = true;
+
+        try {
+            const response = await fetch('resources/auth/login', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    usuario: username,
+                    contrasena: password
+                })
+            });
+
+            if (!response.ok) {
+                errorLogin.hidden = false;
+                return;
+            }
+
+            document.querySelector('#login-password').value = '';
+            await showMainApp();
+
+        } catch (error) {
+            console.error('Error al iniciar sesión:', error);
+            errorLogin.hidden = false;
+        } finally {
+            if (boton) boton.disabled = false;
         }
-
-        document.querySelector('#login-error').hidden = true;
-        await showMainApp();
     });
 
-    showLoginScreen();
+    try {
+        const response = await fetch('resources/auth/sesion', {
+            credentials: 'same-origin',
+            cache: 'no-store'
+        });
+
+        if (response.ok) {
+            await showMainApp();
+        } else {
+            showLoginScreen();
+        }
+    } catch (error) {
+        showLoginScreen();
+    }
 });
