@@ -8,7 +8,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 
 @Entity
-@Table(name = "puesto")
+@Table(name = "PUESTOS", schema = "SARITA")
 public class Puesto {
     @Id
     @Column(name = "id_puesto")
@@ -16,8 +16,6 @@ public class Puesto {
     private Long idPuesto;
     @Column(name = "descripcion_puesto")
     private String descripcionPuesto;
-    @Column(name = "id_estatus")
-    private String idEstatus;
 
     public Long getIdPuesto() {
         return idPuesto;
@@ -33,13 +31,5 @@ public class Puesto {
 
     public void setDescripcionPuesto(String descripcionPuesto) {
         this.descripcionPuesto = descripcionPuesto;
-    }
-
-    public String getIdEstatus() {
-        return idEstatus;
-    }
-
-    public void setIdEstatus(String idEstatus) {
-        this.idEstatus = idEstatus;
     }
 }

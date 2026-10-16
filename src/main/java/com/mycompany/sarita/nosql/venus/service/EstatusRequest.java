@@ -1,9 +1,9 @@
 package com.mycompany.sarita.nosql.venus.service;
 
 public class EstatusRequest {
+
     private String idEstatus;
     private String descripcion;
-    private String categoria;
 
     public String getIdEstatus() {
         return idEstatus;
@@ -19,13 +19,5 @@ public class EstatusRequest {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
-    }
-
-    public String getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
     }
 }

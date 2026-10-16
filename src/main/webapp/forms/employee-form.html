@@ -102,6 +102,12 @@
    .employee-editor-horizontal .employee-form-tab[hidden] {
         display: none !important;
     }
+
+    #employee-course-type-container[hidden],
+    #employee-existing-course-container[hidden],
+    #employee-new-course-container[hidden] {
+            display: none !important;
+        }
 </style>
 
 <form class="modal employee-form" id="edit-form" method="dialog">
@@ -384,13 +390,28 @@
                     class="form-grid"
                     id="employee-course-fields">
 
-                    <label>
-                        Curso
-                        <select id="employee-course-id">
-                            <option value="">
-                                Selecciona un curso
-                            </option>
+                    <label id="employee-course-type-container">
+                        Tipo de curso
+                        <select id="employee-course-type">
+                            <option value="existing">Seleccionar curso existente</option>
+                            <option value="new">Registrar curso nuevo</option>
                         </select>
+                    </label>
+
+                    <label id="employee-existing-course-container">
+                        Curso existente
+                        <select id="employee-existing-course">
+                            <option value="">Selecciona un curso</option>
+                        </select>
+                    </label>
+
+                    <label id="employee-new-course-container" hidden>
+                        Nombre del curso
+                        <input
+                            id="employee-course-id"
+                            type="text"
+                            maxlength="150"
+                            placeholder="Nombre del curso">
                     </label>
 
                     <label>

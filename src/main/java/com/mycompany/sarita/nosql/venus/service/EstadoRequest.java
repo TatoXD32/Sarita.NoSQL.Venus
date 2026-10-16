@@ -4,7 +4,6 @@ public class EstadoRequest {
     private String idEstado;
     private String nombre;
     private String idPais;
-    private String idEstatus;
 
     public String getIdEstado() {
         return idEstado;
@@ -28,13 +27,5 @@ public class EstadoRequest {
 
     public void setIdPais(String idPais) {
         this.idPais = idPais;
-    }
-
-    public String getIdEstatus() {
-        return idEstatus;
-    }
-
-    public void setIdEstatus(String idEstatus) {
-        this.idEstatus = idEstatus;
     }
 }

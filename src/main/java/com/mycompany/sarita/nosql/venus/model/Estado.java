@@ -8,7 +8,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "estado")
+@Table(name = "ESTADOS", schema = "SARITA")
 public class Estado {
     @Id
     @Column(name = "id_estado")
@@ -17,8 +17,6 @@ public class Estado {
     @ManyToOne
     @JoinColumn(name = "id_pais", nullable = false)
     private Pais pais;
-    @Column(name = "id_estatus")
-    private String idEstatus;
 
     public String getIdEstado() {
         return idEstado;
@@ -42,13 +40,5 @@ public class Estado {
 
     public void setPais(Pais pais) {
         this.pais = pais;
-    }
-
-    public String getIdEstatus() {
-        return idEstatus;
-    }
-
-    public void setIdEstatus(String idEstatus) {
-        this.idEstatus = idEstatus;
     }
 }

@@ -1,40 +1,12 @@
 package com.mycompany.sarita.nosql.venus.model;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 @Entity
-@Table(name = "cat_estatus")
+@Table(name="ESTATUS_EMPLEADOS", schema="SARITA")
 public class CatEstatus {
-    @Id
-    @Column(name = "id_estatus")
-    private String idEstatus;
-    private String descripcion;
-    private String categoria;
-
-    public String getIdEstatus() {
-        return idEstatus;
-    }
-
-    public void setIdEstatus(String idEstatus) {
-        this.idEstatus = idEstatus;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public String getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
-    }
+    @Id @Column(name="ID_ESTATUS") private String idEstatus;
+    @Column(name="DESCRIPCION") private String descripcion;
+    public String getIdEstatus(){return idEstatus;}
+    public void setIdEstatus(String value){idEstatus=value;}
+    public String getDescripcion(){return descripcion;}
+    public void setDescripcion(String value){descripcion=value;}
 }

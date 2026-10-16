@@ -521,6 +521,65 @@ function bindEmployeeFormSteps() {
 
 let employeeCourseAssignments = [];
 let editingEmployeeCourseId = null;
+async function loadExistingEmployeeCourses() {
+    const select = $('#employee-existing-course');
+    if (!select) return;
+
+    try {
+        const response = await request('resources/empleado-cursos');
+
+        if (!response.ok) {
+            throw Error('No se pudieron cargar los cursos.');
+        }
+
+        const assignments = await response.json();
+        const names = new Map();
+
+        assignments.forEach(item => {
+            const name = item.nombreCurso?.trim();
+
+            if (name && !names.has(name.toUpperCase())) {
+                names.set(name.toUpperCase(), name);
+            }
+        });
+
+        select.innerHTML = '<option value="">Selecciona un curso</option>';
+
+        [...names.values()]
+            .sort((a, b) => a.localeCompare(b))
+            .forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+
+    } catch (error) {
+        console.error(error);
+        showEmployeeCourseMessage('No fue posible cargar los cursos existentes.');
+    }
+}
+
+function toggleEmployeeCourseType() {
+    const editing = editingEmployeeCourseId !== null;
+    const type = $('#employee-course-type')?.value;
+
+    const typeContainer = $('#employee-course-type-container');
+    const existingContainer = $('#employee-existing-course-container');
+    const newContainer = $('#employee-new-course-container');
+
+    if (typeContainer) {
+        typeContainer.hidden = editing;
+    }
+
+    if (existingContainer) {
+        existingContainer.hidden = editing || type !== 'existing';
+    }
+
+    if (newContainer) {
+        newContainer.hidden = !editing && type !== 'new';
+    }
+}
 
 function toggleEmployeeCoursePanel(visible) {
     const panel = $('#employee-course-panel');
@@ -534,21 +593,35 @@ function toggleEmployeeCoursePanel(visible) {
     const save = $('#employee-add-course');
     if (save) save.textContent = editingEmployeeCourseId !== null ? 'Guardar cambios' : 'Guardar curso';
     if (!visible) {
-        editingEmployeeCourseId = null;
-        ['#employee-course-id', '#employee-course-start', '#employee-course-end']
-            .forEach(selector => { const field = $(selector); if (field) field.value = ''; });
-    }
+    editingEmployeeCourseId = null;
+
+    [
+        '#employee-course-id',
+        '#employee-existing-course',
+        '#employee-course-start',
+        '#employee-course-end'
+    ].forEach(selector => {
+        const field = $(selector);
+        if (field) field.value = '';
+    });
+
+    const type = $('#employee-course-type');
+    if (type) type.value = 'existing';
+}
+
+toggleEmployeeCourseType();
+
+if (visible && editingEmployeeCourseId === null) {
+    loadExistingEmployeeCourses();
+}
 }
 
 
 
 async function loadEmployeeCourses(employeeId) {
     const table = $('#employee-courses-body');
-    const select = $('#employee-course-id');
-    if (!table || !select) return;
+    if (!table) return;
     table.innerHTML = '<tr><td colspan="4">Cargando cursos...</td></tr>';
-    select.innerHTML = option('', 'Seleccionar curso...') +
-        (admin.courses || []).map(course => option(course.idCurso, course.nombre)).join('');
     try {
         const response = await request(`resources/empleado-cursos/empleado/${employeeId}`);
         if (!response.ok) throw Error('No se pudieron consultar los cursos.');
@@ -557,7 +630,7 @@ async function loadEmployeeCourses(employeeId) {
         employeeCourseAssignments = courses;
         table.innerHTML = courses.length ? courses.map(item => `
             <tr>
-                <td>${escapeHtml(item.curso?.nombre || 'Sin nombre')}</td>
+                <td>${escapeHtml(item.nombreCurso || 'Sin nombre')}</td>
                 <td>${escapeHtml(item.fechaInicio || 'N/A')}</td>
                 <td>${escapeHtml(item.fechaFin || 'N/A')}</td>
                 <td>
@@ -581,7 +654,8 @@ function editEmployeeCourse(id) {
     if (!item) return;
     editingEmployeeCourseId = item.idEmpleadoCurso;
     toggleEmployeeCoursePanel(true);
-    $('#employee-course-id').value = String(item.curso?.idCurso || '');
+    toggleEmployeeCourseType();
+    $('#employee-course-id').value = String(item.nombreCurso || '');
     $('#employee-course-start').value = item.fechaInicio || '';
     $('#employee-course-end').value = item.fechaFin || '';
     showEmployeeCourseMessage('');
@@ -590,7 +664,7 @@ function editEmployeeCourse(id) {
 async function deleteEmployeeCourse(id) {
     const item = employeeCourseAssignments.find(row => String(row.idEmpleadoCurso) === String(id));
     if (!item || !editingId) return;
-    if (!window.confirm(`¿Quitar el curso "${item.curso?.nombre || 'seleccionado'}" de este empleado?`)) return;
+    if (!window.confirm(`¿Quitar el curso "${item.nombreCurso || 'seleccionado'}" de este empleado?`)) return;
     try {
         const response = await request(`resources/empleado-cursos/${encodeURIComponent(id)}`, 'DELETE');
         if (!response.ok) throw Error(await response.text() || 'No se pudo quitar el curso.');
@@ -605,20 +679,24 @@ async function deleteEmployeeCourse(id) {
 
 async function addEmployeeCourse() {
     if (!editingId) return showEmployeeCourseMessage('Primero debes registrar al empleado.');
-    const idCurso = $('#employee-course-id')?.value;
+    const type = $('#employee-course-type')?.value;
+
+const nombreCurso = editingEmployeeCourseId !== null || type === 'new'
+    ? $('#employee-course-id')?.value?.trim()
+    : $('#employee-existing-course')?.value;
     const fechaInicio = $('#employee-course-start')?.value;
     const fechaFin = $('#employee-course-end')?.value;
-    if (!idCurso || !fechaInicio || !fechaFin) return showEmployeeCourseMessage('Completa el curso y ambas fechas.');
-    if (fechaFin < fechaInicio) return showEmployeeCourseMessage('La fecha de término no puede ser anterior al inicio.');
+    if (!nombreCurso || !fechaInicio) return showEmployeeCourseMessage('Completa el nombre del curso y la fecha de inicio.');
+    if (fechaFin && fechaFin < fechaInicio) return showEmployeeCourseMessage('La fecha de término no puede ser anterior al inicio.');
     const duplicate = employeeCourseAssignments.some(item =>
-        String(item.curso?.idCurso) === String(idCurso) &&
+        String(item.nombreCurso).toUpperCase() === nombreCurso.toUpperCase() &&
         String(item.idEmpleadoCurso) !== String(editingEmployeeCourseId));
     if (duplicate) return showEmployeeCourseMessage('Este curso ya está asignado al empleado.');
     const updating = editingEmployeeCourseId !== null;
     const endpoint = updating
         ? `resources/empleado-cursos/${encodeURIComponent(editingEmployeeCourseId)}`
         : 'resources/empleado-cursos';
-    const payload = { idEmpleado: Number(editingId), idCurso: Number(idCurso), fechaInicio, fechaFin };
+    const payload = { idEmpleado: Number(editingId), nombreCurso, fechaInicio, fechaFin: fechaFin || null };
     const save = $('#employee-add-course');
     if (save) save.disabled = true;
     try {
@@ -915,7 +993,7 @@ async function openDetail(employee) {
                     ${courses.length
                         ? courses.map(item => `
                             <p>
-                                <strong>${escapeHtml(item.curso?.nombre || '')}</strong>
+                                <strong>${escapeHtml(item.nombreCurso || '')}</strong>
                                 ${escapeHtml(item.fechaInicio || '')} -
                                 ${escapeHtml(item.fechaFin || 'En curso')}
                             </p>
@@ -1125,6 +1203,10 @@ function bindEmployeeEvents() {
         $('#detail-dialog')?.close();
     });
     $('#employee-add-course')?.addEventListener('click', addEmployeeCourse);
+    $('#employee-course-type')?.addEventListener(
+    'change',
+    toggleEmployeeCourseType
+);
     $('#employee-courses-body')?.addEventListener('click', event => {
         const edit = event.target.closest('.employee-course-edit');
         const remove = event.target.closest('.employee-course-delete');
@@ -1148,13 +1230,12 @@ function bindEmployeeEvents() {
 async function loadAdmin() {
     try {
         const urls = [
-            'resources/catalogos/cursos',
-            'resources/catalogos/paises',
+                        'resources/catalogos/paises',
             'resources/catalogos/estados',
             'resources/catalogos/departamentos',
             'resources/catalogos/puestos',
             'resources/catalogos/sexos',
-            'resources/catalogos/estatus?categoria=GENERAL',
+            'resources/catalogos/estatus',
             'resources/empleado-cursos'
         ];
 
@@ -1167,7 +1248,6 @@ async function loadAdmin() {
         }
 
         [
-            admin.courses,
             admin.countries,
             admin.states,
             admin.departments,
@@ -1189,10 +1269,6 @@ async function loadAdmin() {
 function renderAdmin() {
     fillGeneralStatuses();
 
-    const courseStatus = $('#course-status');
-    if (courseStatus) {
-        courseStatus.innerHTML = statusOptions(admin.generalStatuses || []);
-    }
 
     const assignEmp = $('#assignment-employee');
     if (assignEmp) {
@@ -1201,45 +1277,20 @@ function renderAdmin() {
         ).join('');
     }
 
-    const assignCourse = $('#assignment-course');
-    if (assignCourse) {
-        assignCourse.innerHTML = (admin.courses || [])
-            .filter(course => course.idEstatus === 'ACTIVO')
-            .map(course => option(course.idCurso, course.nombre))
-            .join('');
-    }
 
     const stateCountry = $('#state-country');
     if (stateCountry) {
         stateCountry.innerHTML = (admin.countries || [])
-            .filter(country => country.idEstatus === 'ACTIVO')
             .map(country => option(country.idPais, country.nombre))
             .join('');
     }
 
     const tableConfigs = [
         {
-            selector: '#courses-body',
-            data: admin.courses,
-            render: item => `
-                <tr>
-                    <td>${escapeHtml(item.nombre)}
-                        <br><small>${escapeHtml(item.descripcion || '')}</small>
-                    </td>
-                    <td><span class="status ${escapeHtml(item.idEstatus)}">${escapeHtml(item.idEstatus)}</span></td>
-                    <td class="actions">
-                        <button data-edit-course="${escapeHtml(item.idCurso)}">Editar</button>
-                        <button data-toggle-course="${escapeHtml(item.idCurso)}">
-                            ${item.idEstatus === 'ACTIVO' ? 'Desactivar' : 'Activar'}
-                        </button>
-                    </td>
-                </tr>`
-        },
-        {
             selector: '#countries-body',
             data: admin.countries,
             render: item => catalogRow(
-                [item.idPais, item.nombre, statusBadge(item.idEstatus)],
+                [item.idPais, item.nombre],
                 'country', item.idPais
             )
         },
@@ -1252,7 +1303,7 @@ function renderAdmin() {
             selector: '#departments-body',
             data: admin.departments,
             render: item => catalogRow(
-                [item.descripcion, statusBadge(item.idEstatus)],
+                [item.descripcion],
                 'department', item.idDepto
             )
         },
@@ -1260,7 +1311,7 @@ function renderAdmin() {
             selector: '#positions-body',
             data: admin.positions,
             render: item => catalogRow(
-                [item.descripcionPuesto, statusBadge(item.idEstatus)],
+                [item.descripcionPuesto],
                 'position', item.idPuesto
             )
         },
@@ -1293,7 +1344,6 @@ function renderAdmin() {
             <tr>
                 <td>${escapeHtml(item.idEstatus)}</td>
                 <td>${escapeHtml(item.descripcion)}</td>
-                <td>${escapeHtml(item.categoria)}</td>
                 <td>
                     <button data-edit-status="${escapeHtml(item.idEstatus)}">
                         Editar
@@ -1310,7 +1360,7 @@ function renderAdmin() {
             .map(item => `
                 <tr>
                     <td>${escapeHtml(employeeLabel(item.empleado))}</td>
-                    <td>${escapeHtml(item.curso?.nombre || '')}</td>
+                    <td>${escapeHtml(item.nombreCurso || '')}</td>
                     <td>${escapeHtml(item.fechaInicio || '')}</td>
                     <td>${escapeHtml(item.fechaFin || 'En curso')}</td>
                 </tr>
@@ -1339,7 +1389,7 @@ function showCatalogEditor(type, editing = false) {
     editor.hidden = false;
     const heading = document.getElementById(`${type}-editor-title`);
     if (heading) { const names = {country:'país',state:'estado',department:'departamento',position:'puesto',sexo:'sexo',status:'estatus'}; heading.textContent = `${editing ? 'Editar' : 'Nuevo'} ${names[type] || type}`; }
-    if (!editing) resetForm(document.getElementById(`${type}-form`));
+    if (!editing) { resetForm(document.getElementById(`${type}-form`)); const idField = document.getElementById(`${type}-form`)?.elements?.idEstatus; if (idField) idField.disabled = false; }
     editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -1348,7 +1398,7 @@ function hideCatalogEditor(type) {
     if (editor) editor.hidden = true;
 }
 
-function catalogRow(cells, type, id, deleteLabel = 'Desactivar') {
+function catalogRow(cells, type, id, deleteLabel = 'Eliminar') {
     const formatted = cells.map(cell => {
         const value = String(cell ?? '');
         return `<td>${value.startsWith('<span class="status ') ? value : escapeHtml(value)}</td>`;
@@ -1377,9 +1427,7 @@ async function saveCatalog(form, path) {
 
     delete data.editingId;
 
-    if (path !== 'sexos' && !data.idEstatus) {
-        data.idEstatus = 'ACTIVO';
-    }
+    if (path !== 'estatus') delete data.idEstatus;
 
     try {
         const response = await request(
@@ -1402,7 +1450,7 @@ async function saveCatalog(form, path) {
 }
 
 async function toggle(path, id) {
-    if (!confirm('¿Deseas desactivar este registro?')) return;
+    if (!confirm('¿Deseas eliminar este registro? Solo será posible si no está relacionado con otros datos.')) return;
 
     try {
         const response = await request(
@@ -1424,95 +1472,103 @@ async function toggle(path, id) {
 // CURSOS
 // ======================================================
 
+function loadExistingCourses() {
+    const select = $('#assignment-existing-course');
+    if (!select) return;
+
+    const courses = new Map();
+
+    (admin.assignments || []).forEach(item => {
+        const name = item.nombreCurso?.trim();
+
+        if (name && !courses.has(name.toUpperCase())) {
+            courses.set(name.toUpperCase(), {
+                nombre: name,
+                descripcion: item.descripcion || ''
+            });
+        }
+    });
+
+    select.innerHTML = '<option value="">Selecciona un curso</option>';
+
+    [...courses.values()]
+        .sort((a, b) => a.nombre.localeCompare(b.nombre))
+        .forEach(course => {
+            const option = document.createElement('option');
+            option.value = course.nombre;
+            option.textContent = course.nombre;
+            option.dataset.descripcion = course.descripcion;
+            select.appendChild(option);
+        });
+}
+
+function toggleAssignmentCourseType() {
+    const type = $('#assignment-course-type')?.value;
+    const existing = $('#existing-course-container');
+    const newCourse = $('#new-course-container');
+    const nameInput = $('#assignment-course-name');
+    const existingSelect = $('#assignment-existing-course');
+
+    if (existing) existing.hidden = type !== 'existing';
+    if (newCourse) newCourse.hidden = type !== 'new';
+
+    if (nameInput) nameInput.required = type === 'new';
+    if (existingSelect) existingSelect.required = type === 'existing';
+}
+
 function bindCourseEvents() {
-    $('#course-form')?.addEventListener('submit', saveCourse);
-    $('#courses-body')?.addEventListener('click', handleCourseAction);
     $('#assignment-form')?.addEventListener('submit', assignCourse);
     $('#ongoing-course')?.addEventListener('change', toggleCourseEndDate);
 
+    $('#assignment-course-type')?.addEventListener(
+        'change',
+        toggleAssignmentCourseType
+    );
+
+    $('#assignment-existing-course')?.addEventListener('change', event => {
+        const option = event.target.selectedOptions[0];
+        const description = $('#assignment-form [name="descripcion"]');
+
+        if (description) {
+            description.value = option?.dataset.descripcion || '';
+        }
+    });
+
     const endDate = $('#assignment-form [name="fechaFin"]');
     if (endDate) endDate.disabled = true;
+
+    toggleAssignmentCourseType();
 }
-
-async function saveCourse(event) {
-    event.preventDefault();
-
-    const data = formData(event.target);
-    const id = data.idCurso;
-
-    delete data.idCurso;
-
-    data.idEstatus = id
-        ? data.idEstatus
-        : data.idEstatus || 'ACTIVO';
-
-    const response = await request(
-        `resources/catalogos/cursos${id ? `/${id}` : ''}`,
-        id ? 'PUT' : 'POST',
-        data
-    );
-
-    if (!response.ok) {
-        alert(await response.text() || 'No fue posible guardar el curso.');
-        return;
-    }
-
-    event.target.reset();
-    setStatusFieldState(event.target, false);
-    await loadAdmin();
-}
-
-function handleCourseAction(event) {
-    const button = event.target.closest('button');
-    if (!button) return;
-
-    const id = Number(
-        button.dataset.editCourse || button.dataset.toggleCourse
-    );
-
-    const course = (admin.courses || [])
-        .find(item => Number(item.idCurso) === id);
-
-    if (!course) return;
-
-    if (button.dataset.editCourse) {
-        const form = $('#course-form');
-        if (!form) return;
-
-        form.elements.idCurso.value = course.idCurso;
-        form.elements.nombre.value = course.nombre;
-        form.elements.descripcion.value = course.descripcion || '';
-        form.elements.idEstatus.value = course.idEstatus;
-
-        setStatusFieldState(form, true);
-    }
-
-    if (button.dataset.toggleCourse) {
-        request(`resources/catalogos/cursos/${id}`, 'PUT', {
-            nombre: course.nombre,
-            descripcion: course.descripcion,
-            idEstatus: course.idEstatus === 'ACTIVO'
-                ? 'INACTIVO'
-                : 'ACTIVO'
-        }).then(response => {
-            if (!response.ok) {
-                throw Error('No fue posible actualizar el curso.');
-            }
-            return loadAdmin();
-        }).catch(error => alert(error.message));
-    }
-}
-
 async function assignCourse(event) {
     event.preventDefault();
 
     const data = formData(event.target);
     const ongoing = $('#ongoing-course');
+    const type = $('#assignment-course-type')?.value;
 
+    // Determinar si se seleccionó un curso existente o uno nuevo
+    if (type === 'existing') {
+        data.nombreCurso = $('#assignment-existing-course')?.value;
+
+        if (!data.nombreCurso) {
+            alert('Selecciona un curso existente.');
+            return;
+        }
+    } else {
+        data.nombreCurso = $('#assignment-course-name')?.value?.trim();
+
+        if (!data.nombreCurso) {
+            alert('Escribe el nombre del curso.');
+            return;
+        }
+    }
+
+    // Si el curso está en progreso, no tiene fecha de finalización
     if (ongoing?.checked) {
         data.fechaFin = null;
     }
 
+    // Registrar la asignación en Oracle
     const response = await request(
         'resources/empleado-cursos', 'POST', data
     );
@@ -1522,6 +1578,7 @@ async function assignCourse(event) {
         return;
     }
 
+    // Limpiar el formulario
     event.target.reset();
 
     if (ongoing) ongoing.checked = true;
@@ -1529,9 +1586,12 @@ async function assignCourse(event) {
     const endDate = $('#assignment-form [name="fechaFin"]');
     if (endDate) endDate.disabled = true;
 
+    // Restaurar el selector de cursos
+    toggleAssignmentCourseType();
+
+    // Actualizar los registros
     await loadAdmin();
 }
-
 function toggleCourseEndDate(event) {
     const field = $('#assignment-form [name="fechaFin"]');
     if (!field) return;
@@ -1660,7 +1720,6 @@ function editStatus(id) {
     form.elements.idEstatus.value = item.idEstatus;
     form.elements.idEstatus.disabled = true;
     form.elements.descripcion.value = item.descripcion;
-    form.elements.categoria.value = item.categoria;
 }
 
 function bindCatalogTableEvents() {
@@ -1798,7 +1857,7 @@ function bindNavigationEvents() {
     // Salir cierra la vista de la aplicación; no elimina una sesión de servidor.
     $('#exit-app')?.addEventListener('click', () => {
         if (window.confirm('¿Deseas salir de la aplicación?')) {
-            window.location.replace('about:blank');
+            showLoginScreen();
         }
     });
 
@@ -1849,7 +1908,6 @@ async function loadFragments() {
 
     const forms = {
         'employee-form-slot': 'forms/employee-form.html',
-        'course-form-slot': 'forms/course-form.html',
         'assignment-form-slot': 'forms/assignment-form.html',
         'country-form-slot': 'forms/country-form.html',
         'state-form-slot': 'forms/state-form.html',
@@ -1890,7 +1948,41 @@ async function loadFragments() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadFragments();
-    bindUIEvents();
+let appInitialized = false;
+
+function showLoginScreen() {
+    document.querySelector('#protected-app').hidden = true;
+    document.querySelector('#login-screen').hidden = false;
+    document.querySelector('#login-password').value = '';
+    document.querySelector('#login-error').hidden = true;
+}
+
+async function showMainApp() {
+    if (!appInitialized) {
+        await loadFragments();
+        bindUIEvents();
+        appInitialized = true;
+    }
+
+    document.querySelector('#login-screen').hidden = true;
+    document.querySelector('#protected-app').hidden = false;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('#login-form').addEventListener('submit', async event => {
+        event.preventDefault();
+
+        const username = document.querySelector('#login-user').value.trim();
+        const password = document.querySelector('#login-password').value;
+
+        if (username !== 'admin' || !password) {
+            document.querySelector('#login-error').hidden = false;
+            return;
+        }
+
+        document.querySelector('#login-error').hidden = true;
+        await showMainApp();
+    });
+
+    showLoginScreen();
 });

@@ -6,105 +6,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Venus | Recursos humanos</title>
     <link rel="stylesheet" href="styles.css">
+
+<style>
+.login-screen {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: #f1f5f9;
+}
+.login-card {
+    width: min(100%, 420px);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 38px;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 16px 50px rgba(15,23,42,.12);
+}
+.login-card h1 { margin: 0; color: #172b4d; }
+.login-card label { font-weight: 600; }
+.login-card input {
+    padding: 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+}
+.login-card button {
+    padding: 14px;
+    border: 0;
+    border-radius: 9px;
+    background: #172b4d;
+    color: white;
+    cursor: pointer;
+}
+#login-error { color: #b91c1c; }
+[hidden] { display: none !important; }
+</style>
+
 </head>
 
 <body>
 
-<div class="app-layout">
+<section id="login-screen" class="login-screen">
+    <form id="login-form" class="login-card">
+        <p class="eyebrow">VENUS</p>
+        <h1>Bienvenido</h1>
+        <p>Inicia sesión para administrar los recursos humanos.</p>
 
-    <!-- BARRA LATERAL GENERAL -->
-    <aside class="app-sidebar">
+        <label for="login-user">Usuario</label>
+        <input id="login-user" type="text"
+               autocomplete="username" required>
 
-        <div class="sidebar-brand">
-            <p class="eyebrow">VENUS</p>
-            <h2>Recursos humanos</h2>
-        </div>
+        <label for="login-password">Contraseña</label>
+        <input id="login-password" type="password"
+               autocomplete="current-password" required>
 
-        <nav class="tabs sidebar-navigation"
-             aria-label="Secciones principales">
+        <p id="login-error" role="alert" hidden>
+            Usuario o contraseña incorrectos.
+        </p>
 
-            <button
-                class="active"
-                data-view="employees-view"
-                type="button">
-                Empleados
-            </button>
+        <button type="submit">Iniciar sesión</button>
+    </form>
+</section>
 
-            <button
-                data-view="catalogs-view"
-                type="button">
-                Catálogos
-            </button>
 
-            <button id="exit-app" type="button">
-                Salir
-            </button>
-
-        </nav>
-
-    </aside>
-
-    <!-- CONTENIDO GENERAL -->
-    <div class="app-main">
-
-        <header class="app-header">
-            <p class="eyebrow">Venus / Recursos humanos</p>
-            <h1>Directorio de empleados</h1>
-            <p>
-                Consulta la plantilla, actualiza sus datos
-                y administra los catálogos de la organización.
-            </p>
-        </header>
-
-        <main>
-            <div id="app-shell"></div>
-        </main>
-
-    </div>
-
-</div>
-
-<!-- FORMULARIO DE EMPLEADOS -->
-<dialog id="edit-dialog">
-    <div id="employee-form-slot"></div>
-</dialog>
-
-<!-- DETALLE DEL EMPLEADO -->
-<dialog id="detail-dialog">
-    <article class="detail-modal">
-
-        <div class="detail-heading">
-            <div>
-                <p class="eyebrow">Ficha de personal</p>
-                <h2 id="detail-name">Empleado</h2>
-            </div>
-
-            <button type="button" id="close-detail">
-                Cerrar
-            </button>
-        </div>
-
-        <div id="employee-detail" class="detail-content"></div>
-
-    </article>
-</dialog>
-
-<script src="js/app.js"></script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Venus | Recursos humanos</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-
-<body>
-
-<div class="app-layout">
+<div class="app-layout" id="protected-app" hidden>
 
     <!-- BARRA LATERAL GENERAL -->
     <aside class="app-sidebar">

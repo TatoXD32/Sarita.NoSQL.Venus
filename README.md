@@ -1,14 +1,14 @@
 # Venus — Sistema de Recursos Humanos
 
-Aplicación web para la administración de empleados, domicilios, departamentos, puestos, catálogos y cursos realizados por empleados. Desarrollada con **Java 21, Jakarta EE 10, JAX-RS, JPA/EclipseLink, Oracle Database y Payara Server**.
+Aplicación web para la administración de empleados, domicilios, departamentos, puestos, catálogos y cursos realizados por empleados. Desarrollada con **Java 17 (compilación), Jakarta EE 10, JAX-RS, JPA/EclipseLink, Oracle Database y Payara Server**.
 
-> **Estado de la actualización:** los scripts SQL de creación se rediseñaron. La base Oracle existente y las entidades, servicios y consultas Java **todavía requieren migración y adaptación**. No se debe asumir que el sistema funciona con el nuevo esquema hasta completar las pruebas.
+> **Estado actual:** la base Oracle local utiliza las 10 tablas funcionales del modelo actualizado. La aplicación se ha compilado y desplegado en Payara. Falta probar los scripts SQL en un esquema nuevo y completar la autenticación real del backend.
 
 ## 1. Requisitos
 
 | Componente | Requisito / referencia |
 | --- | --- |
-| Java | JDK 21 |
+| Java | JDK 17 o superior; el proyecto compila para Java 17 |
 | Maven | Compatible con el `pom.xml` del proyecto (se ha utilizado Maven 3.8.7) |
 | Jakarta EE | 10 |
 | Payara | Payara Server 6 en el entorno Docker probado; verificar compatibilidad con la instalación propia |
@@ -68,7 +68,7 @@ El modelo se reorganizó para cumplir las observaciones de diseño:
 | --- | --- |
 | `SCRIPT_CREACION_TABLAS.sql` | Crea únicamente la estructura del esquema nuevo |
 | `SCRIPT_INSERCION.sql` | Inserta los datos de ejemplo en el esquema nuevo |
-| `SCRIPT_CREACION_DE_TODA_LA_BD.sql` | Ejecuta creación e inserciones en un solo archivo |
+| `SCRIPT_CREACION_DE _TODA_LA_BD.sql` | Ejecuta creación e inserciones en un solo archivo |
 
 **Usa una sola alternativa:** ejecuta el script completo **o** el de tablas seguido del de inserciones. No ejecutes ambos métodos sobre el mismo esquema.
 
@@ -81,7 +81,7 @@ El modelo se reorganizó para cumplir las observaciones de diseño:
 3. Ejecutar el archivo completo en SQL*Plus, desde el directorio donde se encuentre:
 
 ```sql
-@SCRIPT_CREACION_DE_TODA_LA_BD.sql
+@"SCRIPT_CREACION_DE _TODA_LA_BD.sql"
 ```
 
 Si los nombres de archivo conservan espacios o variantes, utiliza la ruta real entre comillas. También puedes abrir y ejecutar el script en SQL Developer.
@@ -101,12 +101,15 @@ SELECT COUNT(*) FROM ESTATUS_EMPLEADOS;
 
 ### Base de datos existente
 
-La instalación que ya usa el proyecto contiene tablas con nombres antiguos (`EMPLEADO`, `DOMICILIO`, `CURSO`, `EMPLEADO_CURSO`, `CAT_ESTATUS`, etc.). **No ejecutes el script de creación corregido sobre ese esquema.** Para actualizarlo se requiere:
+El entorno local utiliza el modelo actualizado de 10 tablas funcionales:
+EMPLEADOS, DOMICILIOS, EMPLEADO_CURSOS, ESTATUS_EMPLEADOS,
+DEPARTAMENTOS, PUESTOS, SEXOS, PAISES, ESTADOS y CREDENCIALES.
 
-1. Respaldo verificable del esquema y sus datos.
-2. Script de migración específico que conserve empleados, domicilios, cursos y relaciones.
-3. Adaptación de entidades JPA, consultas y servicios REST.
-4. Pruebas de integridad y funcionamiento antes de utilizarlo normalmente.
+Pueden existir tablas antiguas o de respaldo en Oracle, pero no forman
+parte del modelo definitivo de la aplicación.
+
+Los scripts de creación están destinados a esquemas nuevos y vacíos.
+No deben ejecutarse sobre el esquema SARITA existente.
 
 ## 5. Conexión de Oracle con Payara
 
@@ -232,7 +235,28 @@ Después de verificar los archivos correctos:
 ```bash
 git add README.md
 git commit -m "Documentacion: actualizar README al nuevo modelo de base de datos"
-git push origin master
+git push -u origin actualizacion-bd-local
 ```
 
 No uses `git add .` sin revisar archivos temporales, respaldos, credenciales o contenido generado. El README documenta el **modelo SQL propuesto**; la migración de Oracle y la adaptación de Java se deben registrar en commits adicionales una vez probadas.
+## 11. Autenticación y seguridad
+
+### Estado actual
+
+La aplicación incluye una pantalla de inicio de sesión de demostración.
+
+Actualmente, el acceso de la interfaz no verifica las credenciales
+contra Oracle. Los servicios REST tampoco están protegidos mediante
+autenticación del servidor.
+
+Por lo tanto, este mecanismo no debe utilizarse en producción.
+
+### Implementación pendiente
+
+- Validar usuario y contraseña desde el backend.
+- Consultar la tabla CREDENCIALES de Oracle.
+- Verificar las contraseñas mediante hashes seguros.
+- Crear y controlar sesiones autenticadas.
+- Proteger los endpoints REST.
+- Implementar el cierre de sesión real.
+- Evitar credenciales escritas directamente en JavaScript.

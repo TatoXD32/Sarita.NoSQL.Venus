@@ -14,7 +14,14 @@ nbproject/private/
 build/
 nbbuild/
 dist/
-nb-configuration.xml (opcional, si prefieres dejarlo local)
+nb-configuration.xml
 
 # VS Code
 .vscode/
+# Respaldos y archivos temporales
+*.bak
+*.respaldo
+*.zip
+EMPLEADO_RESPALDO_*
+consultar_estructura.sql
+estructura_oracle_local.sql

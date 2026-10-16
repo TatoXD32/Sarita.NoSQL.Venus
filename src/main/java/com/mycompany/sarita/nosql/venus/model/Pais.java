@@ -6,14 +6,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "pais")
+@Table(name = "PAISES", schema = "SARITA")
 public class Pais {
     @Id
     @Column(name = "id_pais")
     private String idPais;
     private String nombre;
-    @Column(name = "id_estatus")
-    private String idEstatus;
 
     public String getIdPais() {
         return idPais;
@@ -29,13 +27,5 @@ public class Pais {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-
-    public String getIdEstatus() {
-        return idEstatus;
-    }
-
-    public void setIdEstatus(String idEstatus) {
-        this.idEstatus = idEstatus;
     }
 }

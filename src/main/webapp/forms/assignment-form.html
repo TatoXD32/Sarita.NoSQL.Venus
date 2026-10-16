@@ -1,1 +1,62 @@
-<form id="assignment-form"><label>Empleado<select name="idEmpleado" id="assignment-employee" required></select></label><label>Curso<select name="idCurso" id="assignment-course" required></select></label><label>Inicio<input name="fechaInicio" type="date" required></label><label>Fin<input name="fechaFin" type="date"></label><label class="check-label"><input id="ongoing-course" type="checkbox" checked> Curso en curso <span>La fecha final se guardara como NULL.</span></label><button class="primary" type="submit">Asignar curso</button></form>
+<form id="assignment-form">
+
+    <label>
+        Empleado
+        <select name="idEmpleado" id="assignment-employee" required></select>
+    </label>
+
+    <label>
+        Tipo de asignación
+        <select id="assignment-course-type">
+            <option value="existing">Seleccionar curso existente</option>
+            <option value="new">Registrar curso nuevo</option>
+        </select>
+    </label>
+
+    <label id="existing-course-container">
+        Curso existente
+        <select id="assignment-existing-course">
+            <option value="">Selecciona un curso</option>
+        </select>
+    </label>
+
+    <label id="new-course-container" hidden>
+        Nombre del curso
+        <input
+            name="nombreCurso"
+            id="assignment-course-name"
+            maxlength="150"
+        >
+    </label>
+
+    <label>
+        Descripción
+        <input name="descripcion" maxlength="250">
+    </label>
+
+    <label>
+        Constancia
+        <input name="constancia" maxlength="500">
+    </label>
+
+    <label>
+        Inicio
+        <input name="fechaInicio" type="date" required>
+    </label>
+
+    <label>
+        Fin
+        <input name="fechaFin" type="date">
+    </label>
+
+    <label class="check-label">
+        <input id="ongoing-course" type="checkbox" checked>
+        Curso en curso
+        <span>La fecha final se guardará como NULL.</span>
+    </label>
+
+    <button class="primary" type="submit">
+        Asignar curso
+    </button>
+
+</form>

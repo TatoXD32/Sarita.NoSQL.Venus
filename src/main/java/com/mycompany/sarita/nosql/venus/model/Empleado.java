@@ -1,152 +1,46 @@
 package com.mycompany.sarita.nosql.venus.model;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.time.LocalDate;
-
 @Entity
-@Table(name = "empleado")
+@Table(name="EMPLEADOS", schema="SARITA")
 public class Empleado {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_empleado")
-    private Long idEmpleado;
-    private String nombre;
-    @Column(name = "apellido_paterno")
-    private String apellidoPaterno;
-    @Column(name = "apellido_materno")
-    private String apellidoMaterno;
-    @Column(name = "fecha_nacimiento")
-    private LocalDate fechaNacimiento;
-    @Column(name = "correo_institucional")
-    private String correoInstitucional;
-    @Column(name = "telefono_celular")
-    private String telefonoCelular;
-    @Column(name = "fecha_ingreso")
-    private LocalDate fechaIngreso;
-    @ManyToOne
-    @JoinColumn(name = "id_sexo", nullable = false)
-    private Sexo sexo;
-    @ManyToOne
-    @JoinColumn(name = "id_depto", nullable = false)
-    private Departamento departamento;
-    @ManyToOne
-    @JoinColumn(name = "id_domicilio", nullable = false, unique = true)
-    private Domicilio domicilio;
-    @ManyToOne
-    @JoinColumn(name = "id_puesto", nullable = false)
-    private Puesto puesto;
-    @ManyToOne
-    @JoinColumn(name = "id_estatus", nullable = false)
-    private CatEstatus estatus;
-
-    public Long getIdEmpleado() {
-        return idEmpleado;
-    }
-
-    public void setIdEmpleado(Long idEmpleado) {
-        this.idEmpleado = idEmpleado;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getApellidoPaterno() {
-        return apellidoPaterno;
-    }
-
-    public void setApellidoPaterno(String apellidoPaterno) {
-        this.apellidoPaterno = apellidoPaterno;
-    }
-
-    public String getApellidoMaterno() {
-        return apellidoMaterno;
-    }
-
-    public void setApellidoMaterno(String apellidoMaterno) {
-        this.apellidoMaterno = apellidoMaterno;
-    }
-
-    public LocalDate getFechaNacimiento() {
-        return fechaNacimiento;
-    }
-
-    public void setFechaNacimiento(LocalDate fechaNacimiento) {
-        this.fechaNacimiento = fechaNacimiento;
-    }
-
-    public String getCorreoInstitucional() {
-        return correoInstitucional;
-    }
-
-    public void setCorreoInstitucional(String correoInstitucional) {
-        this.correoInstitucional = correoInstitucional;
-    }
-
-    public String getTelefonoCelular() {
-        return telefonoCelular;
-    }
-
-    public void setTelefonoCelular(String telefonoCelular) {
-        this.telefonoCelular = telefonoCelular;
-    }
-
-    public LocalDate getFechaIngreso() {
-        return fechaIngreso;
-    }
-
-    public void setFechaIngreso(LocalDate fechaIngreso) {
-        this.fechaIngreso = fechaIngreso;
-    }
-
-    public Sexo getSexo() {
-        return sexo;
-    }
-
-    public void setSexo(Sexo sexo) {
-        this.sexo = sexo;
-    }
-
-    public Departamento getDepartamento() {
-        return departamento;
-    }
-
-    public void setDepartamento(Departamento departamento) {
-        this.departamento = departamento;
-    }
-
-    public Domicilio getDomicilio() {
-        return domicilio;
-    }
-
-    public void setDomicilio(Domicilio domicilio) {
-        this.domicilio = domicilio;
-    }
-
-    public Puesto getPuesto() {
-        return puesto;
-    }
-
-    public void setPuesto(Puesto puesto) {
-        this.puesto = puesto;
-    }
-
-    public CatEstatus getEstatus() {
-        return estatus;
-    }
-
-    public void setEstatus(CatEstatus estatus) {
-        this.estatus = estatus;
-    }
+    @Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(name="ID_EMPLEADO") private Long idEmpleado;
+    @Column(name="NOMBRE") private String nombre;
+    @Column(name="APELLIDO_PATERNO") private String apellidoPaterno;
+    @Column(name="APELLIDO_MATERNO") private String apellidoMaterno;
+    @Column(name="FECHA_NACIMIENTO") private LocalDate fechaNacimiento;
+    @Column(name="CORREO_INSTITUCIONAL") private String correoInstitucional;
+    @Column(name="TELEFONO_CELULAR") private String telefonoCelular;
+    @Column(name="FECHA_INGRESO") private LocalDate fechaIngreso;
+    @ManyToOne @JoinColumn(name="ID_SEXO",nullable=false) private Sexo sexo;
+    @ManyToOne @JoinColumn(name="ID_DEPTO",nullable=false) private Departamento departamento;
+    @OneToOne(mappedBy="empleado") private Domicilio domicilio;
+    @ManyToOne @JoinColumn(name="ID_PUESTO",nullable=false) private Puesto puesto;
+    @ManyToOne @JoinColumn(name="ID_ESTATUS",nullable=false) private CatEstatus estatus;
+    public Long getIdEmpleado(){return idEmpleado;}
+    public void setIdEmpleado(Long v){idEmpleado=v;}
+    public String getNombre(){return nombre;}
+    public void setNombre(String v){nombre=v;}
+    public String getApellidoPaterno(){return apellidoPaterno;}
+    public void setApellidoPaterno(String v){apellidoPaterno=v;}
+    public String getApellidoMaterno(){return apellidoMaterno;}
+    public void setApellidoMaterno(String v){apellidoMaterno=v;}
+    public LocalDate getFechaNacimiento(){return fechaNacimiento;}
+    public void setFechaNacimiento(LocalDate v){fechaNacimiento=v;}
+    public String getCorreoInstitucional(){return correoInstitucional;}
+    public void setCorreoInstitucional(String v){correoInstitucional=v;}
+    public String getTelefonoCelular(){return telefonoCelular;}
+    public void setTelefonoCelular(String v){telefonoCelular=v;}
+    public LocalDate getFechaIngreso(){return fechaIngreso;}
+    public void setFechaIngreso(LocalDate v){fechaIngreso=v;}
+    public Sexo getSexo(){return sexo;}
+    public void setSexo(Sexo v){sexo=v;}
+    public Departamento getDepartamento(){return departamento;}
+    public void setDepartamento(Departamento v){departamento=v;}
+    public Domicilio getDomicilio(){return domicilio;}
+    public void setDomicilio(Domicilio v){domicilio=v;if(v!=null)v.setEmpleado(this);}
+    public Puesto getPuesto(){return puesto;}
+    public void setPuesto(Puesto v){puesto=v;}
+    public CatEstatus getEstatus(){return estatus;}
+    public void setEstatus(CatEstatus v){estatus=v;}
 }
