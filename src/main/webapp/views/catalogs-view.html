@@ -1,10 +1,42 @@
 <section id="catalogs-view" class="view">
-    <div class="toolbar"><div><h2>Catalogos</h2><span class="muted">Administra cada tipo de dato desde su propia seccion.</span></div><button id="reload-catalogs" type="button">Actualizar</button></div>
-    <nav class="subtabs" aria-label="Catalogos"><button class="active" data-catalog="countries-panel" type="button">Paises</button><button data-catalog="states-panel" type="button">Estados</button><button data-catalog="departments-panel" type="button">Departamentos</button><button data-catalog="positions-panel" type="button">Puestos</button><button data-catalog="sexos-panel" type="button">Sexos</button><button data-catalog="statuses-panel" type="button">Estatus</button></nav>
-    <div id="countries-panel" class="catalog-panel active"><article class="panel"><h2>Paises</h2><div class="search-box compact"><label>Buscar país<input type="search" data-table-filter="countries-body" placeholder="Nombre o clave"></label></div><div id="country-form-slot"></div><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Nombre</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="countries-body"></tbody></table></div></article></div>
-    <div id="states-panel" class="catalog-panel"><article class="panel"><h2>Estados</h2><div class="search-box compact"><label>Buscar estado<input type="search" data-table-filter="states-body" placeholder="Nombre o clave"></label></div><div id="state-form-slot"></div><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Estado</th><th>Pais</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="states-body"></tbody></table></div></article></div>
-    <div id="departments-panel" class="catalog-panel"><article class="panel"><h2>Departamentos</h2><div class="search-box compact"><label>Buscar departamento<input type="search" data-table-filter="departments-body" placeholder="Departamento"></label></div><div id="department-form-slot"></div><div class="table-wrap"><table><thead><tr><th>Descripcion</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="departments-body"></tbody></table></div></article></div>
-    <div id="positions-panel" class="catalog-panel"><article class="panel"><h2>Puestos</h2><div class="search-box compact"><label>Buscar puesto<input type="search" data-table-filter="positions-body" placeholder="Puesto"></label></div><div id="position-form-slot"></div><div class="table-wrap"><table><thead><tr><th>Descripcion</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="positions-body"></tbody></table></div></article></div>
-    <div id="sexos-panel" class="catalog-panel"><article class="panel"><h2>Sexos</h2><div class="search-box compact"><label>Buscar sexo<input type="search" data-table-filter="sexes-body" placeholder="Clave o descripcion"></label></div><div id="sexo-form-slot"></div><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Descripcion</th><th>Acciones</th></tr></thead><tbody id="sexes-body"></tbody></table></div></article></div>
-    <div id="statuses-panel" class="catalog-panel"><article class="panel"><h2>Estatus disponibles</h2><div class="search-box compact"><label>Buscar estatus<input type="search" data-table-filter="statuses-body" placeholder="Clave o descripcion"></label></div><p class="muted">La clave no cambia al editar porque otras tablas la utilizan como referencia. Para crear uno nuevo, captura una clave.</p><div id="status-form-slot"></div><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Descripcion</th><th>Categoria</th><th>Acciones</th></tr></thead><tbody id="statuses-body"></tbody></table></div></article></div>
+<div class="toolbar"><div><h2>Catálogos</h2><span class="muted">Administra los catálogos del sistema.</span></div><button id="reload-catalogs" type="button">Actualizar</button></div>
+<nav class="subtabs catalog-reference-tabs" aria-label="Catálogos">
+<button type="button" class="active" data-catalog="countries-panel">Países</button>
+<button type="button" class="" data-catalog="states-panel">Estados</button>
+<button type="button" class="" data-catalog="departments-panel">Departamentos</button>
+<button type="button" class="" data-catalog="positions-panel">Puestos</button>
+<button type="button" class="" data-catalog="sexos-panel">Sexos</button>
+<button type="button" class="" data-catalog="statuses-panel">Estatus</button>
+</nav>
+<div id="countries-panel" class="catalog-panel active">
+<div class="table-wrap"><table><thead><tr><th>Clave</th><th>Nombre</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="countries-body"></tbody></table></div>
+<div class="catalog-reference-footer"><button type="button" class="primary" data-open-catalog-form="country">Nuevo país</button></div>
+<div class="catalog-inline-editor" id="country-editor" hidden><h3 id="country-editor-title">Nuevo país</h3><div id="country-form-slot"></div></div>
+</div>
+<div id="states-panel" class="catalog-panel ">
+<div class="table-wrap"><table><thead><tr><th>Clave</th><th>Nombre</th><th>En uso</th><th>Acciones</th></tr></thead><tbody id="states-body"></tbody></table></div>
+<div class="catalog-reference-footer"><button type="button" class="primary" data-open-catalog-form="state">Nuevo estado</button></div>
+<div class="catalog-inline-editor" id="state-editor" hidden><h3 id="state-editor-title">Nuevo estado</h3><div id="state-form-slot"></div></div>
+</div>
+<div id="departments-panel" class="catalog-panel ">
+<div class="table-wrap"><table><thead><tr><th>Descripción</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="departments-body"></tbody></table></div>
+<div class="catalog-reference-footer"><button type="button" class="primary" data-open-catalog-form="department">Nuevo departamento</button></div>
+<div class="catalog-inline-editor" id="department-editor" hidden><h3 id="department-editor-title">Nuevo departamento</h3><div id="department-form-slot"></div></div>
+</div>
+<div id="positions-panel" class="catalog-panel ">
+<div class="table-wrap"><table><thead><tr><th>Descripción</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="positions-body"></tbody></table></div>
+<div class="catalog-reference-footer"><button type="button" class="primary" data-open-catalog-form="position">Nuevo puesto</button></div>
+<div class="catalog-inline-editor" id="position-editor" hidden><h3 id="position-editor-title">Nuevo puesto</h3><div id="position-form-slot"></div></div>
+</div>
+<div id="sexos-panel" class="catalog-panel ">
+<div class="table-wrap"><table><thead><tr><th>Clave</th><th>Nombre</th><th>En uso</th><th>Acciones</th></tr></thead><tbody id="sexes-body"></tbody></table></div>
+<div class="catalog-reference-footer"><button type="button" class="primary" data-open-catalog-form="sexo">Nuevo sexo</button></div>
+<div class="catalog-inline-editor" id="sexo-editor" hidden><h3 id="sexo-editor-title">Nuevo sexo</h3><div id="sexo-form-slot"></div></div>
+</div>
+<div id="statuses-panel" class="catalog-panel ">
+<div class="table-wrap"><table><thead><tr><th>Clave</th><th>Descripción</th><th>Categoría</th><th>Acciones</th></tr></thead><tbody id="statuses-body"></tbody></table></div>
+<div class="catalog-reference-footer"><button type="button" class="primary" data-open-catalog-form="status">Nuevo estatus</button></div>
+<div class="catalog-inline-editor" id="status-editor" hidden><h3 id="status-editor-title">Nuevo estatus</h3><div id="status-form-slot"></div></div>
+</div>
+<p class="catalog-use-note">«En uso» se muestra cuando el servidor proporciona esa información.</p>
 </section>
