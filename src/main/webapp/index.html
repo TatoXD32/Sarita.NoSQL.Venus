@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,27 +7,183 @@
     <title>Venus | Recursos humanos</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-<header>
-    <p class="eyebrow">Venus / Recursos humanos</p>
-    <h1>Directorio de empleados</h1>
-    <p>Consulta la plantilla, actualiza sus datos y administra los catalogos de la organizacion.</p>
-</header>
-<nav class="tabs" aria-label="Secciones principales">
-    <button class="active" data-view="employees-view" type="button">Empleados</button>
-    <button data-view="courses-view" type="button">Cursos y asignaciones</button>
-    <button data-view="catalogs-view" type="button">Catalogos</button>
-</nav>
-<main>
-    <div id="app-shell"></div>
-</main>
-<dialog id="edit-dialog"><div id="employee-form-slot"></div></dialog>
+
+<div class="app-layout">
+
+    <!-- BARRA LATERAL GENERAL -->
+    <aside class="app-sidebar">
+
+        <div class="sidebar-brand">
+            <p class="eyebrow">VENUS</p>
+            <h2>Recursos humanos</h2>
+        </div>
+
+        <nav class="tabs sidebar-navigation"
+             aria-label="Secciones principales">
+
+            <button
+                class="active"
+                data-view="employees-view"
+                type="button">
+                Empleados
+            </button>
+
+            <button
+                data-view="catalogs-view"
+                type="button">
+                Catálogos
+            </button>
+
+            <button id="exit-app" type="button">
+                Salir
+            </button>
+
+        </nav>
+
+    </aside>
+
+    <!-- CONTENIDO GENERAL -->
+    <div class="app-main">
+
+        <header class="app-header">
+            <p class="eyebrow">Venus / Recursos humanos</p>
+            <h1>Directorio de empleados</h1>
+            <p>
+                Consulta la plantilla, actualiza sus datos
+                y administra los catálogos de la organización.
+            </p>
+        </header>
+
+        <main>
+            <div id="app-shell"></div>
+        </main>
+
+    </div>
+
+</div>
+
+<!-- FORMULARIO DE EMPLEADOS -->
+<dialog id="edit-dialog">
+    <div id="employee-form-slot"></div>
+</dialog>
+
+<!-- DETALLE DEL EMPLEADO -->
 <dialog id="detail-dialog">
     <article class="detail-modal">
-        <div class="detail-heading"><div><p class="eyebrow">Ficha de personal</p><h2 id="detail-name">Empleado</h2></div><button type="button" id="close-detail">Cerrar</button></div>
+
+        <div class="detail-heading">
+            <div>
+                <p class="eyebrow">Ficha de personal</p>
+                <h2 id="detail-name">Empleado</h2>
+            </div>
+
+            <button type="button" id="close-detail">
+                Cerrar
+            </button>
+        </div>
+
         <div id="employee-detail" class="detail-content"></div>
+
     </article>
 </dialog>
+
 <script src="js/app.js"></script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venus | Recursos humanos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<div class="app-layout">
+
+    <!-- BARRA LATERAL GENERAL -->
+    <aside class="app-sidebar">
+
+        <div class="sidebar-brand">
+            <p class="eyebrow">VENUS</p>
+            <h2>Recursos humanos</h2>
+        </div>
+
+        <nav class="tabs sidebar-navigation"
+             aria-label="Secciones principales">
+
+            <button
+                class="active"
+                data-view="employees-view"
+                type="button">
+                Empleados
+            </button>
+
+            <button
+                data-view="catalogs-view"
+                type="button">
+                Catálogos
+            </button>
+
+            <button id="exit-app" type="button">
+                Salir
+            </button>
+
+        </nav>
+
+    </aside>
+
+    <!-- CONTENIDO GENERAL -->
+    <div class="app-main">
+
+        <header class="app-header">
+            <p class="eyebrow">Venus / Recursos humanos</p>
+            <h1>Directorio de empleados</h1>
+            <p>
+                Consulta la plantilla, actualiza sus datos
+                y administra los catálogos de la organización.
+            </p>
+        </header>
+
+        <main>
+            <div id="app-shell"></div>
+        </main>
+
+    </div>
+
+</div>
+
+<!-- FORMULARIO DE EMPLEADOS -->
+<dialog id="edit-dialog">
+    <div id="employee-form-slot"></div>
+</dialog>
+
+<!-- DETALLE DEL EMPLEADO -->
+<dialog id="detail-dialog">
+    <article class="detail-modal">
+
+        <div class="detail-heading">
+            <div>
+                <p class="eyebrow">Ficha de personal</p>
+                <h2 id="detail-name">Empleado</h2>
+            </div>
+
+            <button type="button" id="close-detail">
+                Cerrar
+            </button>
+        </div>
+
+        <div id="employee-detail" class="detail-content"></div>
+
+    </article>
+</dialog>
+
+<script src="js/app.js"></script>
+
 </body>
 </html>
