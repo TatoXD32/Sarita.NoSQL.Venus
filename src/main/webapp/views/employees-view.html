@@ -14,52 +14,27 @@
         </div>
     </div>
 
-    <!-- Busqueda de empleados -->
+    <!-- Busqueda unificada de empleados -->
     <div class="search-box employee-search-panel">
-
         <h3>Buscar empleados</h3>
-
-        <div class="employee-filters">
-
-            <label for="filter-numero">
-                Número de empleado
-                <input
-                    id="filter-numero"
-                    type="text"
-                    placeholder="Número de empleado"
-                    autocomplete="off"
-                >
-            </label>
-
-            <label for="employee-search">
-                Nombre
-                <input
-                    id="employee-search"
-                    type="search"
-                    placeholder="Nombre del empleado"
-                    autocomplete="off"
-                >
-            </label>
-
-            <label for="filter-estatus">
-                Estatus
-                <select id="filter-estatus">
-                    <option value="">Todos</option>
-                </select>
-            </label>
-
+        <div class="employee-unified-search">
+            <label for="employee-search">Número, nombre, apellidos o correo institucional</label>
+            <div class="employee-search-input-row">
+                <input id="employee-search" type="search"
+                    placeholder="Buscar empleado..." autocomplete="off"
+                    aria-label="Buscar empleado por número, nombre, apellidos o correo">
+                <button id="search-employees" class="primary" type="button">Buscar</button>
+            </div>
         </div>
-
         <div class="employee-search-actions">
-            <button id="clear-filters" type="button">
-                Limpiar
-            </button>
-
-            <button id="search-employees" class="primary" type="button">
-                Buscar
-            </button>
+            <span class="employee-filter-label">Mostrar:</span>
+            <div class="employee-status-buttons" role="group" aria-label="Filtrar por estatus">
+                <button type="button" class="employee-status-filter is-active" data-employee-status="" aria-pressed="true">Todos</button>
+                <button type="button" class="employee-status-filter" data-employee-status="ACTIVO" aria-pressed="false">Activos</button>
+                <button type="button" class="employee-status-filter" data-employee-status="BAJA" aria-pressed="false">Bajas</button>
+            </div>
+            <button id="clear-filters" type="button">Limpiar</button>
         </div>
-
     </div>
 
     <!-- Tabla de empleados -->
@@ -80,8 +55,7 @@
             <tbody id="employees">
                 <tr>
                     <td class="empty" colspan="5">
-                        Captura un filtro y pulsa Buscar
-                        para ver empleados.
+                        Cargando empleados...
                     </td>
                 </tr>
             </tbody>
@@ -94,7 +68,7 @@
     <div class="employee-pagination">
 
         <span id="pagination-info">
-            Sin resultados
+            Cargando...
         </span>
 
         <div class="pagination-actions">
