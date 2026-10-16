@@ -451,3 +451,134 @@ dialog#detail-dialog { width: min(850px, calc(100vw - 2rem)); max-width: calc(10
     .detail-courses { grid-column: auto; }
     .detail-section dl { grid-template-columns: 1fr; gap: .25rem; }
 }
+
+/* ==========================================
+   ESTRUCTURA GENERAL CON BARRA LATERAL
+   ========================================== */
+
+.app-layout {
+    display: grid;
+    grid-template-columns: 245px minmax(0, 1fr);
+    min-height: 100vh;
+    width: 100%;
+}
+
+.app-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 28px 16px;
+    border-right: 1px solid rgba(128, 128, 128, 0.25);
+    min-width: 0;
+}
+
+.sidebar-brand {
+    padding: 0 12px;
+}
+
+.sidebar-brand h2 {
+    margin: 8px 0 0;
+    font-size: 1.25rem;
+}
+
+.app-main {
+    min-width: 0;
+    padding: 0 24px 32px;
+}
+
+.app-header {
+    margin-bottom: 24px;
+}
+
+/* NAVEGACION VERTICAL */
+
+.app-sidebar .sidebar-navigation {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.app-sidebar .sidebar-navigation button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    text-align: left;
+    padding: 13px 16px;
+    border-radius: 10px;
+    white-space: normal;
+}
+
+/* CONTENIDO */
+
+.app-main main,
+.app-main #app-shell {
+    width: 100%;
+    min-width: 0;
+}
+
+/* PANTALLAS PEQUEÑAS */
+
+@media (max-width: 768px) {
+    .app-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .app-sidebar {
+        border-right: none;
+        border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .app-sidebar .sidebar-navigation {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .app-sidebar .sidebar-navigation button {
+        width: auto;
+    }
+
+    .app-main {
+        padding: 0 16px 24px;
+    }
+}
+
+/* Busqueda unificada del directorio de empleados */
+.employee-search-panel .employee-unified-search { margin: 14px 0 12px; }
+.employee-unified-search > label { display: block; margin-bottom: 7px; font-size: .9rem; }
+.employee-search-input-row { display: flex; gap: 9px; align-items: stretch; }
+.employee-search-input-row input { flex: 1; min-width: 0; width: 100%; }
+.employee-search-input-row button { flex-shrink: 0; }
+.employee-search-panel .employee-search-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0 16px; }
+.employee-filter-label { font-size: .88rem; opacity: .8; }
+.employee-status-buttons { display: inline-flex; flex-wrap: wrap; gap: 5px; }
+.employee-status-filter.is-active { background: #315fe5; color: #fff; border-color: #315fe5; }
+.employee-status-filter[aria-pressed="true"] { font-weight: 600; }
+@media (max-width: 560px) {
+  .employee-search-input-row { flex-direction: column; }
+  .employee-search-input-row button { width: 100%; }
+}
+/* Catálogos: distribución de la pantalla de referencia */
+.catalog-reference-tabs { margin-top: 1rem; }
+.catalog-reference-tabs button { border: 0; border-radius: 0; background: transparent; }
+.catalog-reference-tabs button.active { background: transparent; color: var(--ink); border-bottom: 3px solid var(--primary); }
+.catalog-reference-footer { display: flex; justify-content: flex-end; margin: 1.2rem 0; }
+.catalog-inline-editor { padding: 1.25rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); margin-bottom: 1.5rem; }
+.catalog-inline-editor[hidden] { display: none; }
+.catalog-inline-editor h3 { margin: 0 0 1rem; }
+.catalog-inline-editor form { display: grid; gap: 1rem; }
+.catalog-use-note { font-size: .78rem; color: var(--muted); }
+
+/* Confirmacion de cambios del empleado */
+.employee-save-confirmation { border:0; border-radius:14px; padding:0; width:min(440px,calc(100vw - 32px)); box-shadow:0 20px 60px #0003; }
+.employee-save-confirmation::backdrop { background:rgba(15,23,42,.5); }
+.employee-save-confirmation-body { padding:24px; }
+.employee-save-confirmation-body h3 { margin:0 0 14px; }
+.employee-save-confirmation-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:22px; flex-wrap:wrap; }
+.employee-pagination[hidden], .table-wrap[hidden] { display:none !important; }
