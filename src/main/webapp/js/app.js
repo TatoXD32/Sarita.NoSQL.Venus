@@ -29,10 +29,8 @@ let editingId = null;
 let currentPage = 1;
 const itemsPerPage = 5;
 
-let employeeSearchApplied = false;
 let employeeFilters = {
-    numero: '',
-    nombre: '',
+    query: '',
     estatus: ''
 };
 
@@ -173,56 +171,30 @@ async function load() {
 // ======================================================
 
 function fillFilterDropdowns() {
-    const select = $('#filter-estatus');
-    if (!select) return;
+    // El estatus ahora se controla mediante botones.
+}
 
-    select.innerHTML =
-        option('', 'Todos los estatus') +
-        (catalogs.estatuses || []).map(item =>
-            option(item.idEstatus, item.descripcion || item.idEstatus)
-        ).join('');
+function updateEmployeeStatusButtons() {
+    document.querySelectorAll('[data-employee-status]').forEach(button => {
+        const active = button.dataset.employeeStatus === employeeFilters.estatus;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-pressed', String(active));
+    });
 }
 
 function searchEmployees() {
-    const numero = ($('#filter-numero')?.value || '').trim();
-    const nombre = ($('#employee-search')?.value || '')
-        .trim().toLowerCase();
-    const estatus = $('#filter-estatus')?.value || '';
-
-    if (!numero && !nombre && !estatus) {
-        alert('Captura al menos un filtro para buscar empleados.');
-        return;
-    }
-
-    employeeFilters = { numero, nombre, estatus };
-    employeeSearchApplied = true;
+    employeeFilters.query = ($('#employee-search')?.value || '').trim().toLowerCase();
     currentPage = 1;
-
+    employeeSearchActivated = true;
     renderEmployees();
 }
 
 function clearEmployeeFilters() {
-    if ($('#filter-numero')) {
-        $('#filter-numero').value = '';
-    }
-
-    if ($('#employee-search')) {
-        $('#employee-search').value = '';
-    }
-
-    if ($('#filter-estatus')) {
-        $('#filter-estatus').value = '';
-    }
-
-    employeeFilters = {
-        numero: '',
-        nombre: '',
-        estatus: ''
-    };
-
-    employeeSearchApplied = false;
+    if ($('#employee-search')) $('#employee-search').value = '';
+    employeeFilters = { query: '', estatus: '' };
+    employeeSearchActivated = false;
     currentPage = 1;
-
+    updateEmployeeStatusButtons();
     renderEmployees();
 }
 
@@ -233,46 +205,32 @@ function clearEmployeeFilters() {
 function renderEmployees() {
     const table = $('#employees');
     if (!table) return;
-
-    if (!employeeSearchApplied) {
-        table.innerHTML = `
-            <tr>
-                <td class="empty" colspan="5">
-                    Captura un filtro y pulsa Buscar para ver empleados.
-                </td>
-            </tr>
-        `;
-
-        if ($('#count')) {
-            $('#count').textContent = 'Consulta de personal registrado';
-        }
-
-        renderPaginationControls(0, 1);
+    const pagination = document.querySelector('.employee-pagination');
+    const tableWrap = table.closest('.table-wrap');
+    if (pagination) pagination.hidden = !employeeSearchActivated;
+    if (tableWrap) tableWrap.hidden = !employeeSearchActivated;
+    if (!employeeSearchActivated) {
+        table.innerHTML = '';
+        if ($('#count')) $('#count').textContent = 'Captura una búsqueda o selecciona un estatus para consultar empleados';
         return;
     }
 
-    const { numero, nombre, estatus } = employeeFilters;
+    const { query, estatus } = employeeFilters;
 
     let results = [...employees].sort(
-        (a, b) => Number(b.idEmpleado || 0) -
-                  Number(a.idEmpleado || 0)
+        (a, b) => Number(b.idEmpleado || 0) - Number(a.idEmpleado || 0)
     );
 
-    if (numero) {
+    if (query) {
         results = results.filter(employee =>
-            String(employee.idEmpleado ?? '').includes(numero)
-        );
-    }
-
-    if (nombre) {
-        results = results.filter(employee =>
-            fullName(employee).toLowerCase().includes(nombre)
+            [employee.idEmpleado, fullName(employee), employee.correoInstitucional]
+                .some(value => String(value ?? '').toLowerCase().includes(query))
         );
     }
 
     if (estatus) {
         results = results.filter(employee =>
-            String(employee.estatus?.idEstatus || '') === estatus
+            String(employee.estatus?.idEstatus || '').toUpperCase() === estatus
         );
     }
 
@@ -355,11 +313,9 @@ function renderPaginationControls(total, totalPages) {
     const next = $('#next-page');
 
     if (info) {
-        info.textContent = !employeeSearchApplied
-            ? 'Sin resultados'
-            : total
-                ? `Mostrando ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, total)} de ${total}`
-                : 'Sin resultados';
+        info.textContent = total
+            ? `Mostrando ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, total)} de ${total}`
+            : 'Sin resultados';
     }
 
     if (label) {
@@ -367,12 +323,11 @@ function renderPaginationControls(total, totalPages) {
     }
 
     if (prev) {
-        prev.disabled = !employeeSearchApplied || currentPage <= 1;
+        prev.disabled = currentPage <= 1;
     }
 
     if (next) {
-        next.disabled = !employeeSearchApplied ||
-                        currentPage >= totalPages;
+        next.disabled = currentPage >= totalPages;
     }
 }
 
@@ -466,16 +421,18 @@ function fillGeneralStatuses() {
 // ======================================================
 
 let employeeFormStep = 0;
+let employeeSearchActivated = false;
+
 
 function showEmployeeFormStep(step) {
     const form = $('#edit-form');
     if (!form) return;
 
-    employeeFormStep = step === 1 ? 1 : 0;
+    const maxStep = editingId ? 2 : 1;
+    employeeFormStep = Math.max(0, Math.min(maxStep, Number(step) || 0));
 
     form.querySelectorAll('.employee-form-step').forEach(section => {
         const active = Number(section.dataset.step) === employeeFormStep;
-
         section.hidden = !active;
         section.style.display = active ? '' : 'none';
         section.classList.toggle('active', active);
@@ -483,32 +440,25 @@ function showEmployeeFormStep(step) {
 
     form.querySelectorAll('[data-employee-step]').forEach(tab => {
         const active = Number(tab.dataset.employeeStep) === employeeFormStep;
-
         tab.classList.toggle('active', active);
-
-        if (active) {
-            tab.setAttribute('aria-current', 'step');
-        } else {
-            tab.removeAttribute('aria-current');
-        }
+        if (active) tab.setAttribute('aria-current', 'step');
+        else tab.removeAttribute('aria-current');
     });
 
     const previous = $('#employee-prev');
     const next = $('#employee-next');
     const save = $('#employee-save');
-
     if (previous) {
         previous.hidden = employeeFormStep === 0;
         previous.style.display = previous.hidden ? 'none' : '';
     }
-
     if (next) {
-        next.hidden = employeeFormStep === 1;
+        next.hidden = employeeFormStep !== 0;
         next.style.display = next.hidden ? 'none' : '';
     }
-
     if (save) {
-        save.hidden = employeeFormStep !== 1;
+        save.textContent = editingId ? 'Guardar cambios' : 'Guardar empleado';
+        save.hidden = !editingId && employeeFormStep !== 1;
         save.style.display = save.hidden ? 'none' : '';
     }
 }
@@ -521,6 +471,7 @@ function validateEmployeeStep(step) {
 
     if (!section) return false;
 
+    const originalStep = employeeFormStep;
     showEmployeeFormStep(step);
 
     const fields = [
@@ -534,6 +485,7 @@ function validateEmployeeStep(step) {
         }
     }
 
+    showEmployeeFormStep(originalStep);
     return true;
 }
 
@@ -545,24 +497,142 @@ function bindEmployeeFormSteps() {
     showEmployeeFormStep(0);
 
     $('#employee-next')?.addEventListener('click', () => {
-        if (validateEmployeeStep(0)) {
-            showEmployeeFormStep(1);
-        }
+        if (validateEmployeeStep(0)) showEmployeeFormStep(1);
     });
 
     $('#employee-prev')?.addEventListener('click', () => {
-        showEmployeeFormStep(0);
+        showEmployeeFormStep(employeeFormStep === 2 ? 1 : 0);
     });
 
     form.querySelectorAll('[data-employee-step]').forEach(tab => {
         tab.addEventListener('click', () => {
             const target = Number(tab.dataset.employeeStep);
-
-            if (target === 0 || validateEmployeeStep(0)) {
+            if (target === 2 && !editingId) return;
+            if (target === 0 || target === 2 || validateEmployeeStep(0)) {
                 showEmployeeFormStep(target);
             }
         });
     });
+}
+
+// ======================================================
+// CURSOS DENTRO DE LA EDICION DE EMPLEADOS
+// ======================================================
+
+let employeeCourseAssignments = [];
+let editingEmployeeCourseId = null;
+
+function toggleEmployeeCoursePanel(visible) {
+    const panel = $('#employee-course-panel');
+    const toggle = $('#employee-course-toggle');
+    if (!panel || !toggle) return;
+    panel.hidden = !visible;
+    toggle.setAttribute('aria-expanded', String(visible));
+    toggle.textContent = visible ? '− Ocultar formulario' : '+ Agregar curso al empleado';
+    const heading = $('#employee-course-form-title');
+    if (heading) heading.textContent = editingEmployeeCourseId !== null ? 'Editar curso asignado' : 'Agregar curso';
+    const save = $('#employee-add-course');
+    if (save) save.textContent = editingEmployeeCourseId !== null ? 'Guardar cambios' : 'Guardar curso';
+    if (!visible) {
+        editingEmployeeCourseId = null;
+        ['#employee-course-id', '#employee-course-start', '#employee-course-end']
+            .forEach(selector => { const field = $(selector); if (field) field.value = ''; });
+    }
+}
+
+
+
+async function loadEmployeeCourses(employeeId) {
+    const table = $('#employee-courses-body');
+    const select = $('#employee-course-id');
+    if (!table || !select) return;
+    table.innerHTML = '<tr><td colspan="4">Cargando cursos...</td></tr>';
+    select.innerHTML = option('', 'Seleccionar curso...') +
+        (admin.courses || []).map(course => option(course.idCurso, course.nombre)).join('');
+    try {
+        const response = await request(`resources/empleado-cursos/empleado/${employeeId}`);
+        if (!response.ok) throw Error('No se pudieron consultar los cursos.');
+        const courses = await response.json();
+        if (String(editingId) !== String(employeeId)) return;
+        employeeCourseAssignments = courses;
+        table.innerHTML = courses.length ? courses.map(item => `
+            <tr>
+                <td>${escapeHtml(item.curso?.nombre || 'Sin nombre')}</td>
+                <td>${escapeHtml(item.fechaInicio || 'N/A')}</td>
+                <td>${escapeHtml(item.fechaFin || 'N/A')}</td>
+                <td>
+                    <button type="button" class="employee-course-edit" data-assignment-id="${escapeHtml(item.idEmpleadoCurso)}">Editar</button>
+                    <button type="button" class="employee-course-delete" data-assignment-id="${escapeHtml(item.idEmpleadoCurso)}">Quitar</button>
+                </td>
+            </tr>`).join('') : '<tr><td colspan="4">Este empleado no tiene cursos registrados.</td></tr>';
+    } catch (error) {
+        console.error(error);
+        table.innerHTML = '<tr><td colspan="4">No fue posible cargar los cursos.</td></tr>';
+    }
+}
+
+function showEmployeeCourseMessage(text) {
+    const message = $('#employee-course-message');
+    if (message) message.textContent = text;
+}
+
+function editEmployeeCourse(id) {
+    const item = employeeCourseAssignments.find(row => String(row.idEmpleadoCurso) === String(id));
+    if (!item) return;
+    editingEmployeeCourseId = item.idEmpleadoCurso;
+    toggleEmployeeCoursePanel(true);
+    $('#employee-course-id').value = String(item.curso?.idCurso || '');
+    $('#employee-course-start').value = item.fechaInicio || '';
+    $('#employee-course-end').value = item.fechaFin || '';
+    showEmployeeCourseMessage('');
+}
+
+async function deleteEmployeeCourse(id) {
+    const item = employeeCourseAssignments.find(row => String(row.idEmpleadoCurso) === String(id));
+    if (!item || !editingId) return;
+    if (!window.confirm(`¿Quitar el curso "${item.curso?.nombre || 'seleccionado'}" de este empleado?`)) return;
+    try {
+        const response = await request(`resources/empleado-cursos/${encodeURIComponent(id)}`, 'DELETE');
+        if (!response.ok) throw Error(await response.text() || 'No se pudo quitar el curso.');
+        toggleEmployeeCoursePanel(false);
+        await loadEmployeeCourses(editingId);
+        showEmployeeCourseMessage('Curso quitado correctamente.');
+    } catch (error) {
+        console.error(error);
+        showEmployeeCourseMessage('No fue posible quitar el curso.');
+    }
+}
+
+async function addEmployeeCourse() {
+    if (!editingId) return showEmployeeCourseMessage('Primero debes registrar al empleado.');
+    const idCurso = $('#employee-course-id')?.value;
+    const fechaInicio = $('#employee-course-start')?.value;
+    const fechaFin = $('#employee-course-end')?.value;
+    if (!idCurso || !fechaInicio || !fechaFin) return showEmployeeCourseMessage('Completa el curso y ambas fechas.');
+    if (fechaFin < fechaInicio) return showEmployeeCourseMessage('La fecha de término no puede ser anterior al inicio.');
+    const duplicate = employeeCourseAssignments.some(item =>
+        String(item.curso?.idCurso) === String(idCurso) &&
+        String(item.idEmpleadoCurso) !== String(editingEmployeeCourseId));
+    if (duplicate) return showEmployeeCourseMessage('Este curso ya está asignado al empleado.');
+    const updating = editingEmployeeCourseId !== null;
+    const endpoint = updating
+        ? `resources/empleado-cursos/${encodeURIComponent(editingEmployeeCourseId)}`
+        : 'resources/empleado-cursos';
+    const payload = { idEmpleado: Number(editingId), idCurso: Number(idCurso), fechaInicio, fechaFin };
+    const save = $('#employee-add-course');
+    if (save) save.disabled = true;
+    try {
+        const response = await request(endpoint, updating ? 'PUT' : 'POST', payload);
+        if (!response.ok) throw Error(await response.text() || 'No se pudo guardar el curso.');
+        toggleEmployeeCoursePanel(false);
+        await loadEmployeeCourses(editingId);
+        showEmployeeCourseMessage(updating ? 'Curso actualizado correctamente.' : 'Curso agregado correctamente.');
+    } catch (error) {
+        console.error(error);
+        showEmployeeCourseMessage('No fue posible guardar el curso. Revisa la consola.');
+    } finally {
+        if (save) save.disabled = false;
+    }
 }
 
 function openEditor(employee) {
@@ -572,6 +642,10 @@ function openEditor(employee) {
     if (!form) return;
 
     form.reset();
+    const courseMessage = $('#employee-course-message');
+    if (courseMessage) courseMessage.textContent = '';
+    toggleEmployeeCoursePanel(false);
+    employeeCourseAssignments = [];
 
     const title = $('#form-title');
 
@@ -638,6 +712,16 @@ function openEditor(employee) {
         updateStatesOptions('');
         setStatusFieldState(form, false);
     }
+    const coursesTab = $('#employee-courses-tab');
+
+    if (coursesTab) {
+    coursesTab.hidden = !employee;
+    coursesTab.style.display = employee ? '' : 'none';
+}
+
+    if (employee) {
+    loadEmployeeCourses(employee.idEmpleado);
+}
 
     showEmployeeFormStep(0);
 
@@ -646,6 +730,37 @@ function openEditor(employee) {
     if (dialog && !dialog.open) {
         dialog.showModal();
     }
+}
+
+function confirmarCambiosEmpleado(payload) {
+    return new Promise(resolve => {
+        const dialog = document.createElement('dialog');
+        dialog.className = 'employee-save-confirmation';
+        dialog.setAttribute('aria-label', 'Confirmar cambios del empleado');
+        const employee = employees.find(item => String(item.idEmpleado) === String(editingId));
+        const name = [payload.nombre, payload.apellidoPaterno, payload.apellidoMaterno].filter(Boolean).join(' ') || (employee ? fullName(employee) : 'empleado');
+        dialog.innerHTML = `<div class="employee-save-confirmation-body">
+            <h3>¿Guardar cambios del empleado?</h3>
+            <p>Se actualizará la información de <strong>${escapeHtml(name)}</strong>.</p>
+            <p>No. de empleado: <strong>${escapeHtml(editingId)}</strong></p>
+            <div class="employee-save-confirmation-actions">
+                <button type="button" data-confirm="no">Cancelar</button>
+                <button type="button" class="primary" data-confirm="yes">Confirmar y guardar</button>
+            </div></div>`;
+        document.body.appendChild(dialog);
+        let done = false;
+        const finish = result => {
+            if (done) return;
+            done = true;
+            if (dialog.open) dialog.close();
+            dialog.remove();
+            resolve(result);
+        };
+        dialog.querySelector('[data-confirm="no"]').addEventListener('click', () => finish(false));
+        dialog.querySelector('[data-confirm="yes"]').addEventListener('click', () => finish(true));
+        dialog.addEventListener('cancel', event => { event.preventDefault(); finish(false); });
+        dialog.showModal();
+    });
 }
 
 async function saveEmployee(event) {
@@ -688,6 +803,13 @@ async function saveEmployee(event) {
         payload.idEstatus = payload.idEstatus || 'ACTIVO';
     }
 
+    const isNewEmployee = !editingId;
+    if (!isNewEmployee) {
+        const accepted = await confirmarCambiosEmpleado(payload);
+        if (!accepted) return;
+    }
+    const previousIds = new Set(employees.map(item => String(item.idEmpleado)));
+
     try {
         const response = await request(
             editingId ? `${api}/${editingId}` : api,
@@ -696,11 +818,37 @@ async function saveEmployee(event) {
         );
 
         if (!response.ok) {
-            throw Error(await response.text() || 'No fue posible guardar.');
+         const errorText = await response.text();
+
+        console.error('ERROR AL REGISTRAR EMPLEADO:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url,
+            respuesta: errorText
+    });
+
+    alert(`Error al guardar empleado. Código HTTP: ${response.status}`);
+    return;
+}
+
+        let createdFromResponse = null;
+        if (isNewEmployee) {
+            try {
+                const body = await response.clone().text();
+                if (body.trim()) createdFromResponse = JSON.parse(body);
+            } catch (_) { /* El servidor puede responder sin cuerpo JSON. */ }
         }
 
         $('#edit-dialog')?.close();
         await load();
+
+        if (isNewEmployee) {
+            const returnedId = createdFromResponse?.idEmpleado ?? createdFromResponse?.empleado?.idEmpleado;
+            const registered = employees.find(item => returnedId != null && String(item.idEmpleado) === String(returnedId))
+                ?? employees.find(item => !previousIds.has(String(item.idEmpleado)) &&
+                    String(item.correoInstitucional || '').toLowerCase() === String(payload.correoInstitucional || '').toLowerCase());
+            mostrarConfirmacionAltaEmpleado(registered, payload);
+        }
 
     } catch (error) {
         alert(error.message);
@@ -739,6 +887,7 @@ async function openDetail(employee) {
             <div class="detail-grid">
                 <section class="detail-section">
                     <h3>Datos personales</h3>
+                    <p><strong>No. de empleado:</strong> ${escapeHtml(employee.idEmpleado ?? 'N/A')}</p>
                     <p>${escapeHtml(fullName(employee))}</p>
                     <p>Nacimiento: ${escapeHtml(employee.fechaNacimiento || 'N/A')}</p>
                     <p>Sexo: ${escapeHtml(employee.sexo?.descripcion || 'N/A')}</p>
@@ -789,17 +938,113 @@ async function openDetail(employee) {
 // EVENTOS DE EMPLEADOS
 // ======================================================
 
+
+// Confirmación informativa tras registrar exitosamente un empleado.
+function mostrarConfirmacionAltaEmpleado(employee, payload) {
+    const dialog = document.createElement('dialog');
+    dialog.setAttribute('aria-labelledby', 'alta-empleado-titulo');
+    dialog.style.cssText = 'border:0;border-radius:16px;padding:0;width:min(480px,calc(100vw - 32px));box-shadow:0 24px 70px rgba(0,0,0,.24);color:#263449;';
+    const style = document.createElement('style');
+    style.textContent = 'dialog[data-alta-empleado]::backdrop{background:rgba(15,23,42,.55)}';
+    dialog.dataset.altaEmpleado = 'true';
+    const id = employee?.idEmpleado;
+    const nombre = employee ? fullName(employee) : [payload.nombre, payload.apellidoPaterno, payload.apellidoMaterno].filter(Boolean).join(' ');
+    const correo = employee?.correoInstitucional ?? payload.correoInstitucional ?? 'N/A';
+    const departamento = employee?.departamento?.descripcion ?? 'N/A';
+    const puesto = employee?.puesto?.descripcionPuesto ?? 'N/A';
+    dialog.innerHTML = `
+        <div style="padding:26px;font-family:inherit">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                <span aria-hidden="true" style="display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#dcfce7;color:#15803d;font-size:24px">✓</span>
+                <h2 id="alta-empleado-titulo" style="font-size:21px;line-height:1.25;margin:0;color:#24334b">Empleado registrado correctamente</h2>
+            </div>
+            <p style="margin:0 0 16px;line-height:1.55;color:#475569">El alta del empleado se realizó correctamente.</p>
+            <div style="background:#f1f5f9;border-radius:10px;padding:15px;margin-bottom:22px;line-height:1.7">
+                <strong style="display:block;color:#1e293b">${escapeHtml(nombre)}</strong>
+                <p style="margin:6px 0"><strong>El ID del empleado es:</strong> ${id != null ? escapeHtml(id) : 'No disponible en la respuesta del servidor'}</p>
+                <p style="margin:6px 0"><strong>Correo:</strong> ${escapeHtml(correo)}</p>
+                <p style="margin:6px 0"><strong>Departamento:</strong> ${escapeHtml(departamento)}</p>
+                <p style="margin:6px 0"><strong>Puesto:</strong> ${escapeHtml(puesto)}</p>
+                <p style="margin:6px 0"><strong>Estatus:</strong> ${escapeHtml(employee?.estatus?.idEstatus ?? 'ACTIVO')}</p>
+            </div>
+            <div style="display:flex;justify-content:flex-end">
+                <button type="button" data-alta-aceptar style="padding:10px 18px;border:0;border-radius:9px;background:#2563eb;color:white;font-weight:600;cursor:pointer">Aceptar</button>
+            </div>
+        </div>`;
+    document.head.appendChild(style);
+    document.body.appendChild(dialog);
+    const close = () => { if (dialog.open) dialog.close(); dialog.remove(); style.remove(); };
+    dialog.querySelector('[data-alta-aceptar]').addEventListener('click', close);
+    dialog.addEventListener('close', close, { once: true });
+    dialog.showModal();
+    dialog.querySelector('[data-alta-aceptar]').focus();
+}
+
+// Confirmacion personalizada de baja: no elimina el registro, cambia su estatus.
+function confirmarBajaEmpleado(employee) {
+    return new Promise(resolve => {
+        const dialog = document.createElement('dialog');
+        dialog.setAttribute('aria-labelledby', 'baja-empleado-titulo');
+        dialog.setAttribute('aria-describedby', 'baja-empleado-descripcion');
+        dialog.style.cssText = 'border:0;border-radius:16px;padding:0;width:min(440px,calc(100vw - 32px));max-width:440px;box-shadow:0 24px 70px rgba(0,0,0,.24);color:#263449;';
+        const style = document.createElement('style');
+        style.textContent = 'dialog[data-baja-empleado]::backdrop{background:rgba(15,23,42,.55)}';
+        dialog.dataset.bajaEmpleado = 'true';
+        dialog.innerHTML = `
+            <div style="padding:26px;font-family:inherit">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                    <span aria-hidden="true" style="display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fff1f2;color:#b42318;font-size:22px">⚠</span>
+                    <h2 id="baja-empleado-titulo" style="font-size:21px;line-height:1.25;margin:0;color:#24334b">Confirmar baja de empleado</h2>
+                </div>
+                <p id="baja-empleado-descripcion" style="margin:0 0 16px;line-height:1.55;color:#475569">¿Estás seguro de que deseas dar de baja a este empleado?</p>
+                <div style="background:#f1f5f9;border-radius:10px;padding:15px;margin-bottom:22px">
+                    <strong style="display:block;margin-bottom:6px;color:#1e293b">${escapeHtml(fullName(employee))}</strong>
+                    <span style="font-size:13px;line-height:1.5;color:#64748b">El empleado cambiará al estado BAJA. Su información permanecerá registrada.</span>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
+                    <button type="button" data-baja-cancelar style="padding:10px 16px;border:1px solid #cbd5e1;border-radius:9px;background:white;color:#334155;cursor:pointer">Cancelar</button>
+                    <button type="button" data-baja-confirmar style="padding:10px 16px;border:0;border-radius:9px;background:#b42318;color:white;font-weight:600;cursor:pointer">Dar de baja</button>
+                </div>
+            </div>`;
+        document.head.appendChild(style);
+        document.body.appendChild(dialog);
+        let settled = false;
+        const finish = confirmed => {
+            if (settled) return;
+            settled = true;
+            if (dialog.open) dialog.close();
+            dialog.remove();
+            style.remove();
+            resolve(confirmed);
+        };
+        dialog.querySelector('[data-baja-cancelar]').addEventListener('click', () => finish(false));
+        dialog.querySelector('[data-baja-confirmar]').addEventListener('click', () => finish(true));
+        dialog.addEventListener('cancel', event => { event.preventDefault(); finish(false); });
+        dialog.addEventListener('click', event => { if (event.target === dialog) finish(false); });
+        dialog.showModal();
+        dialog.querySelector('[data-baja-cancelar]').focus();
+    });
+}
+
 function bindEmployeeEvents() {
     $('#search-employees')?.addEventListener('click', searchEmployees);
 
     $('#clear-filters')?.addEventListener('click', clearEmployeeFilters);
 
-    ['#filter-numero', '#employee-search'].forEach(selector => {
-        $(selector)?.addEventListener('keydown', event => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                searchEmployees();
-            }
+    $('#employee-search')?.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            searchEmployees();
+        }
+    });
+
+    document.querySelectorAll('[data-employee-status]').forEach(button => {
+        button.addEventListener('click', () => {
+            employeeFilters.estatus = button.dataset.employeeStatus || '';
+            employeeSearchActivated = true;
+            currentPage = 1;
+            updateEmployeeStatusButtons();
+            renderEmployees();
         });
     });
 
@@ -843,7 +1088,7 @@ function bindEmployeeEvents() {
         }
 
         if (button.dataset.delete) {
-            if (!confirm('¿Dar de baja a este empleado?')) return;
+            if (!await confirmarBajaEmpleado(employee)) return;
 
             try {
                 const response = await request(`${api}/${id}`, 'DELETE');
@@ -878,6 +1123,21 @@ function bindEmployeeEvents() {
 
     $('#close-detail')?.addEventListener('click', () => {
         $('#detail-dialog')?.close();
+    });
+    $('#employee-add-course')?.addEventListener('click', addEmployeeCourse);
+    $('#employee-courses-body')?.addEventListener('click', event => {
+        const edit = event.target.closest('.employee-course-edit');
+        const remove = event.target.closest('.employee-course-delete');
+        if (edit) editEmployeeCourse(edit.dataset.assignmentId);
+        if (remove) deleteEmployeeCourse(remove.dataset.assignmentId);
+    });
+    $('#employee-course-toggle')?.addEventListener('click', () => {
+        editingEmployeeCourseId = null;
+        const panel = $('#employee-course-panel');
+        toggleEmployeeCoursePanel(Boolean(panel?.hidden));
+    });
+    $('#employee-course-cancel')?.addEventListener('click', () => {
+        toggleEmployeeCoursePanel(false);
     });
 }
 
@@ -986,11 +1246,7 @@ function renderAdmin() {
         {
             selector: '#states-body',
             data: admin.states,
-            render: item => catalogRow(
-                [item.idEstado, item.nombre, item.pais?.nombre || '',
-                 statusBadge(item.idEstatus)],
-                'state', item.idEstado
-            )
+            render: item => referenceCatalogRow(item.idEstado, item.nombre, item.enUso, 'state')
         },
         {
             selector: '#departments-body',
@@ -1011,10 +1267,7 @@ function renderAdmin() {
         {
             selector: '#sexes-body',
             data: admin.sexos,
-            render: item => catalogRow(
-                [item.idSexo, item.descripcion],
-                'sexo', item.idSexo, 'Eliminar'
-            )
+            render: item => referenceCatalogRow(item.idSexo, item.descripcion, item.enUso, 'sexo')
         }
     ];
 
@@ -1069,6 +1322,32 @@ function statusBadge(status) {
     return `<span class="status ${escapeHtml(status)}">${escapeHtml(status)}</span>`;
 }
 
+function referenceCatalogRow(id, name, inUse, type) {
+    const usage = typeof inUse === 'boolean' ? (inUse ? 'Sí' : 'No') : '—';
+    return `<tr>
+        <td>${escapeHtml(id)}</td><td>${escapeHtml(name)}</td>
+        <td>${usage}</td>
+        <td class="actions">
+            <button type="button" data-edit-${type}="${escapeHtml(id)}">Editar</button>
+            <button type="button" class="danger" data-delete-${type}="${escapeHtml(id)}">Eliminar</button>
+        </td></tr>`;
+}
+
+function showCatalogEditor(type, editing = false) {
+    const editor = document.getElementById(`${type}-editor`);
+    if (!editor) return;
+    editor.hidden = false;
+    const heading = document.getElementById(`${type}-editor-title`);
+    if (heading) { const names = {country:'país',state:'estado',department:'departamento',position:'puesto',sexo:'sexo',status:'estatus'}; heading.textContent = `${editing ? 'Editar' : 'Nuevo'} ${names[type] || type}`; }
+    if (!editing) resetForm(document.getElementById(`${type}-form`));
+    editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function hideCatalogEditor(type) {
+    const editor = document.getElementById(`${type}-editor`);
+    if (editor) editor.hidden = true;
+}
+
 function catalogRow(cells, type, id, deleteLabel = 'Desactivar') {
     const formatted = cells.map(cell => {
         const value = String(cell ?? '');
@@ -1114,6 +1393,7 @@ async function saveCatalog(form, path) {
         }
 
         resetForm(form);
+        const editorByPath = {paises:'country',estados:'state',departamentos:'department',puestos:'position'}; if (editorByPath[path]) hideCatalogEditor(editorByPath[path]);
         await loadAdmin();
 
     } catch (error) {
@@ -1268,6 +1548,10 @@ function toggleCourseEndDate(event) {
 // ======================================================
 
 function bindCatalogEvents() {
+    document.querySelectorAll('[data-open-catalog-form]').forEach(button => {
+        button.addEventListener('click', () => showCatalogEditor(button.dataset.openCatalogForm));
+    });
+
     const forms = {
         country: 'paises',
         state: 'estados',
@@ -1294,6 +1578,7 @@ function bindCatalogEvents() {
                 );
 
             if (form) resetForm(form);
+            hideCatalogEditor(button.id.replace('cancel-', ''));
         });
     });
 }
@@ -1317,6 +1602,7 @@ async function saveSexo(event) {
     }
 
     resetForm(event.target);
+    hideCatalogEditor('sexo');
     await loadAdmin();
 }
 
@@ -1403,6 +1689,7 @@ function bindCatalogTableEvents() {
                         row => String(row[key]) === String(id)
                     );
                     editForm($(selector), item, id);
+                    showCatalogEditor(name.toLowerCase(), true);
                     return;
                 }
 
@@ -1425,9 +1712,7 @@ function bindCatalogTableEvents() {
                 }
             }
 
-            if (data.editStatus) {
-                editStatus(data.editStatus);
-            }
+            if (data.editStatus) { editStatus(data.editStatus); showCatalogEditor('status', true); }
         });
     });
 }
@@ -1494,7 +1779,7 @@ function bindNavigationEvents() {
 
     document.querySelectorAll('[data-catalog]').forEach(button => {
         button.addEventListener('click', () => {
-            document.querySelectorAll('.subtabs button').forEach(item => {
+            document.querySelectorAll('#catalogs-view .subtabs button').forEach(item => {
                 item.classList.remove('active');
             });
 
@@ -1508,6 +1793,13 @@ function bindNavigationEvents() {
 
             if (target) target.classList.add('active');
         });
+    });
+
+    // Salir cierra la vista de la aplicación; no elimina una sesión de servidor.
+    $('#exit-app')?.addEventListener('click', () => {
+        if (window.confirm('¿Deseas salir de la aplicación?')) {
+            window.location.replace('about:blank');
+        }
     });
 
     $('#reload-courses')?.addEventListener('click', loadAdmin);
