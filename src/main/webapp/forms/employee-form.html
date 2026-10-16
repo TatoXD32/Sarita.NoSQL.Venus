@@ -1,219 +1,431 @@
 
+<style>
+    .employee-editor-layout {
+        display: grid;
+        grid-template-columns: 175px minmax(0, 1fr);
+        gap: 22px;
+        align-items: start;
+        margin-top: 18px;
+    }
+
+    .employee-editor-layout .employee-form-tabs {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        position: sticky;
+        top: 0;
+    }
+
+    .employee-editor-layout .employee-form-tab {
+        width: 100%;
+        text-align: left;
+        white-space: normal;
+    }
+
+    .employee-editor-content {
+        min-width: 0;
+    }
+
+    .employee-editor-content .employee-form-step[hidden],
+    .employee-editor-layout .employee-form-tab[hidden] {
+        display: none !important;
+    }
+
+    #employee-course-panel[hidden] { display: none !important; }
+    #employee-course-panel { margin-top: 16px; }
+
+    .employee-editor-content .employee-form-step h3:first-child {
+        margin-top: 0;
+    }
+
+    .employee-editor-content .form-grid {
+        min-width: 0;
+    }
+
+    .employee-editor-content .form-grid input,
+    .employee-editor-content .form-grid select {
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .employee-courses-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .employee-courses-table th,
+    .employee-courses-table td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    @media (max-width: 600px) {
+        .employee-editor-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .employee-editor-layout .employee-form-tabs {
+            position: static;
+        }
+    }
+    /* Navegación horizontal del formulario */
+
+    .employee-editor-horizontal {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+}
+
+    .employee-editor-horizontal .employee-form-tabs {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        position: static;
+}
+
+    .employee-editor-horizontal .employee-form-tab {
+        width: auto;
+        text-align: center;
+        white-space: normal;
+}
+
+    .employee-editor-horizontal .employee-editor-content {
+        width: 100%;
+        min-width: 0;
+}
+
+   .employee-editor-horizontal .employee-form-step[hidden],
+   .employee-editor-horizontal .employee-form-tab[hidden] {
+        display: none !important;
+    }
+</style>
+
 <form class="modal employee-form" id="edit-form" method="dialog">
 
     <h2 id="form-title">Nuevo empleado</h2>
 
-    <!-- Navegación del formulario -->
-    <div class="employee-form-tabs">
-        <button
-            type="button"
-            class="employee-form-tab active"
-            data-employee-step="0"
-            aria-current="step">
-            1. Datos del empleado
-        </button>
+    <div class="employee-editor-layout employee-editor-horizontal">
 
-        <button
-            type="button"
-            class="employee-form-tab"
-            data-employee-step="1">
-            2. Domicilio
-        </button>
+        <!-- NAVEGACIÓN LATERAL -->
+        
+            <nav class="employee-form-tabs"
+            aria-label="Secciones del empleado">
+
+            <button
+                type="button"
+                class="employee-form-tab active"
+                data-employee-step="0"
+                aria-current="step">
+                1. Datos del empleado
+            </button>
+
+            <button
+                type="button"
+                class="employee-form-tab"
+                data-employee-step="1">
+                2. Domicilio
+            </button>
+
+            <button
+                type="button"
+                class="employee-form-tab"
+                data-employee-step="2"
+                id="employee-courses-tab"
+                hidden>
+                3. Cursos
+            </button>
+
+</nav>
+
+
+        <!-- CONTENIDO -->
+        <div class="employee-editor-content">
+
+            <!-- DATOS DEL EMPLEADO -->
+            <section
+                class="employee-form-step active"
+                data-step="0">
+
+                <h3>Datos personales</h3>
+
+                <div class="form-grid">
+
+                    <label>
+                        Nombre
+                        <input
+                            name="nombre"
+                            type="text"
+                            required
+                            autocomplete="given-name">
+                    </label>
+
+                    <label>
+                        Apellido paterno
+                        <input
+                            name="apellidoPaterno"
+                            type="text"
+                            required>
+                    </label>
+
+                    <label>
+                        Apellido materno
+                        <input
+                            name="apellidoMaterno"
+                            type="text">
+                    </label>
+
+                    <label>
+                        Fecha de nacimiento
+                        <input
+                            name="fechaNacimiento"
+                            type="date"
+                            required>
+                    </label>
+
+                    <label>
+                        Sexo
+                        <select
+                            name="idSexo"
+                            id="sexos"
+                            required>
+                        </select>
+                    </label>
+
+                </div>
+
+                <h3>Información laboral y contacto</h3>
+
+                <div class="form-grid">
+
+                    <label>
+                        Fecha de ingreso
+                        <input
+                            name="fechaIngreso"
+                            type="date"
+                            required>
+                    </label>
+
+                    <label>
+                        Correo institucional
+                        <input
+                            name="correoInstitucional"
+                            type="email"
+                            required
+                            autocomplete="email">
+                    </label>
+
+                    <label>
+                        Teléfono celular
+                        <input
+                            name="telefonoCelular"
+                            type="tel"
+                            inputmode="numeric"
+                            pattern="[0-9]{10}"
+                            maxlength="10"
+                            required>
+                    </label>
+
+                    <label>
+                        Departamento
+                        <select
+                            name="idDepto"
+                            id="departamentos"
+                            required>
+                        </select>
+                    </label>
+
+                    <label>
+                        Puesto
+                        <select
+                            name="idPuesto"
+                            id="puestos"
+                            required>
+                        </select>
+                    </label>
+
+                    <div
+                        class="status-field"
+                        data-status-field="employee-status">
+
+                        <label>
+                            Estatus
+                            <select
+                                name="idEstatus"
+                                id="estatuses"
+                                required>
+                            </select>
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- DOMICILIO -->
+            <section
+                class="employee-form-step"
+                data-step="1"
+                hidden>
+
+                <h3>Información del domicilio</h3>
+
+                <div class="form-grid">
+
+                    <label>
+                        Calle
+                        <input
+                            name="calle"
+                            type="text"
+                            required>
+                    </label>
+
+                    <label>
+                        Número exterior
+                        <input
+                            name="numeroExterior"
+                            type="text"
+                            required>
+                    </label>
+
+                    <label>
+                        Número interior
+                        <input
+                            name="numeroInterior"
+                            type="text">
+                    </label>
+
+                    <label>
+                        Código postal
+                        <input
+                            name="codigoPostal"
+                            type="text"
+                            inputmode="numeric"
+                            pattern="[0-9]{5}"
+                            maxlength="5"
+                            required>
+                    </label>
+
+                    <label>
+                        País
+                        <select
+                            name="idPais"
+                            id="paises-domicilio"
+                            required>
+                            <option value="">
+                                Seleccione un país...
+                            </option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Estado
+                        <select
+                            name="idEstado"
+                            id="estados-domicilio"
+                            required
+                            disabled>
+                            <option value="">
+                                Seleccione primero un país...
+                            </option>
+                        </select>
+                    </label>
+
+                </div>
+
+            </section>
+
+            <!-- CURSOS DEL EMPLEADO -->
+            <section
+                class="employee-form-step"
+                data-step="2"
+                hidden>
+
+                <h3>Cursos del empleado</h3>
+
+                <p>
+                    Cursos registrados con constancia
+                    de término.
+                </p>
+
+                <div style="overflow-x: auto;">
+
+                    <table class="employee-courses-table">
+                        <thead>
+                            <tr>
+                                <th>Curso</th>
+                                <th>Fecha de inicio</th>
+                                <th>Fecha de término</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="employee-courses-body">
+                            <tr>
+                                <td colspan="4">
+                                    Sin cursos registrados.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <button type="button" id="employee-course-toggle" class="primary" aria-expanded="false" aria-controls="employee-course-panel">+ Agregar curso al empleado</button>
+
+                <div id="employee-course-panel" hidden>
+                <h3 id="employee-course-form-title">Agregar curso</h3>
+
+                <div
+                    class="form-grid"
+                    id="employee-course-fields">
+
+                    <label>
+                        Curso
+                        <select id="employee-course-id">
+                            <option value="">
+                                Selecciona un curso
+                            </option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Fecha de inicio
+                        <input
+                            id="employee-course-start"
+                            type="date">
+                    </label>
+
+                    <label>
+                        Fecha de término
+                        <input
+                            id="employee-course-end"
+                            type="date">
+                    </label>
+
+                </div>
+
+                <div class="employee-course-actions" style="display:flex;gap:10px;margin-top:14px;">
+                    <button type="button" id="employee-course-cancel">Cancelar</button>
+                    <button type="button" id="employee-add-course" class="primary">Guardar curso</button>
+                </div>
+                </div>
+
+                <p
+                    id="employee-course-message"
+                    role="status"
+                    aria-live="polite">
+                </p>
+
+            </section>
+
+        </div>
+
     </div>
-
-    <!-- PASO 1: DATOS DEL EMPLEADO -->
-    <section
-        class="employee-form-step active"
-        data-step="0">
-
-        <h3>Datos personales</h3>
-
-        <div class="form-grid">
-
-            <label>
-                Nombre
-                <input
-                    name="nombre"
-                    type="text"
-                    required
-                    autocomplete="given-name">
-            </label>
-
-            <label>
-                Apellido paterno
-                <input
-                    name="apellidoPaterno"
-                    type="text"
-                    required>
-            </label>
-
-            <label>
-                Apellido materno
-                <input
-                    name="apellidoMaterno"
-                    type="text">
-            </label>
-
-            <label>
-                Fecha de nacimiento
-                <input
-                    name="fechaNacimiento"
-                    type="date"
-                    required>
-            </label>
-
-            <label>
-                Sexo
-                <select
-                    name="idSexo"
-                    id="sexos"
-                    required>
-                </select>
-            </label>
-
-        </div>
-
-        <h3>Información laboral y contacto</h3>
-
-        <div class="form-grid">
-
-            <label>
-                Fecha de ingreso
-                <input
-                    name="fechaIngreso"
-                    type="date"
-                    required>
-            </label>
-
-            <label>
-                Correo institucional
-                <input
-                    name="correoInstitucional"
-                    type="email"
-                    required
-                    autocomplete="email">
-            </label>
-
-            <label>
-                Teléfono celular
-                <input
-                    name="telefonoCelular"
-                    type="tel"
-                    inputmode="numeric"
-                    pattern="[0-9]{10}"
-                    maxlength="10"
-                    required>
-            </label>
-
-            <label>
-                Departamento
-                <select
-                    name="idDepto"
-                    id="departamentos"
-                    required>
-                </select>
-            </label>
-
-            <label>
-                Puesto
-                <select
-                    name="idPuesto"
-                    id="puestos"
-                    required>
-                </select>
-            </label>
-
-            <div
-                class="status-field"
-                data-status-field="employee-status">
-
-                <label>
-                    Estatus
-                    <select
-                        name="idEstatus"
-                        id="estatuses"
-                        required>
-                    </select>
-                </label>
-
-            </div>
-
-        </div>
-
-    </section>
-
-    <!-- PASO 2: DOMICILIO -->
-    <section
-        class="employee-form-step"
-        data-step="1"
-        hidden>
-
-        <h3>Información del domicilio</h3>
-
-        <div class="form-grid">
-
-            <label>
-                Calle
-                <input
-                    name="calle"
-                    type="text"
-                    required>
-            </label>
-
-            <label>
-                Número exterior
-                <input
-                    name="numeroExterior"
-                    type="text"
-                    required>
-            </label>
-
-            <label>
-                Número interior
-                <input
-                    name="numeroInterior"
-                    type="text">
-            </label>
-
-            <label>
-                Código postal
-                <input
-                    name="codigoPostal"
-                    type="text"
-                    inputmode="numeric"
-                    pattern="[0-9]{5}"
-                    maxlength="5"
-                    required>
-            </label>
-
-            <label>
-                País
-                <select
-                    name="idPais"
-                    id="paises-domicilio"
-                    required>
-                    <option value="">
-                        Seleccione un país...
-                    </option>
-                </select>
-            </label>
-
-            <label>
-                Estado
-                <select
-                    name="idEstado"
-                    id="estados-domicilio"
-                    required
-                    disabled>
-                    <option value="">
-                        Seleccione primero un país...
-                    </option>
-                </select>
-            </label>
-
-        </div>
-
-    </section>
 
     <!-- ACCIONES -->
     <div class="modal-actions employee-form-actions">
