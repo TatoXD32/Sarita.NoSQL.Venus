@@ -1,315 +1,238 @@
-# Venus - Guía de configuración
+# Venus — Sistema de Recursos Humanos
 
-Aplicación web de Recursos Humanos con Jakarta EE 10, JAX-RS, JPA/EclipseLink, Oracle Database y Payara Server.
+Aplicación web para la administración de empleados, domicilios, departamentos, puestos, catálogos y cursos realizados por empleados. Desarrollada con **Java 21, Jakarta EE 10, JAX-RS, JPA/EclipseLink, Oracle Database y Payara Server**.
 
-Incluye empleados, domicilios, cursos, asignaciones empleado-curso, países, estados, puestos, departamentos y estatus.
+> **Estado de la actualización:** los scripts SQL de creación se rediseñaron. La base Oracle existente y las entidades, servicios y consultas Java **todavía requieren migración y adaptación**. No se debe asumir que el sistema funciona con el nuevo esquema hasta completar las pruebas.
 
 ## 1. Requisitos
 
-| Herramienta | Versión |
+| Componente | Requisito / referencia |
 | --- | --- |
-| JDK | 21 |
-| Maven | 3.9 o superior |
-| Payara Server | 7 |
-| Oracle Database | 21c o superior |
-| NetBeans o VS Code | Actual |
+| Java | JDK 21 |
+| Maven | Compatible con el `pom.xml` del proyecto (se ha utilizado Maven 3.8.7) |
+| Jakarta EE | 10 |
+| Payara | Payara Server 6 en el entorno Docker probado; verificar compatibilidad con la instalación propia |
+| Oracle Database | Oracle Free 23 en el entorno Docker del proyecto; scripts con sintaxis Oracle |
+| Editor | VS Code o NetBeans |
+| Driver JDBC | `ojdbc11` según `pom.xml` |
 
-El proyecto usa `ojdbc11` `23.4.0.24.05` y Jakarta EE Web `10.0.0`.
+Verifica las herramientas:
 
-Comprueba Java y Maven:
-
-```powershell
+```bash
 java -version
 mvn -version
 ```
 
-## 2. Clonar y abrir el proyecto
+## 2. Obtener el proyecto
 
-Cada integrante debe usar sus propias rutas y credenciales. Desde PowerShell:
-
-```powershell
-git clone <REPO_URL>
+```bash
+git clone https://github.com/TatoXD32/Sarita.NoSQL.Venus.git
 cd Sarita.NoSQL.Venus
 git status
-mvn clean package
 ```
 
-En NetBeans usa **File > Open Project**. En VS Code usa **File > Open Folder** y selecciona la carpeta que contiene `pom.xml`.
+Abre la carpeta que contiene `pom.xml` en VS Code o NetBeans. Cada integrante debe configurar sus propias rutas, conexiones y credenciales.
 
-## 3. Crear toda la base de datos
+## 3. Modelo de base de datos corregido
 
-El archivo oficial para crear la base de datos completa es:
+El modelo se reorganizó para cumplir las observaciones de diseño:
 
-```text
-SCRIPT_CREACION_DE _TODA_LA_BD.sql
-```
+1. **Sin script de borrado:** no se incluye un procedimiento de `DROP TABLE` como parte de la instalación normal.
+2. **Estatus específicos:** se elimina el catálogo general `CAT_ESTATUS`. `ESTATUS_EMPLEADOS` contiene únicamente los estados de empleados; otros catálogos no dependen de un estatus genérico.
+3. **Relación empleado–domicilio:** `DOMICILIOS.ID_EMPLEADO` es a la vez clave primaria y foránea hacia `EMPLEADOS.ID_EMPLEADO`. Un empleado puede tener como máximo un domicilio registrado en esta tabla.
+4. **Tablas en plural:** los nombres siguen una convención uniforme.
+5. **Restricciones:** se utilizan `PRIMARY KEY`, `FOREIGN KEY`, `UNIQUE`, `NOT NULL` y `CHECK` según corresponda.
+6. **Sin identificadores innecesarios:** `DOMICILIOS` no tiene `ID_DOMICILIO`; utiliza `ID_EMPLEADO`. `EMPLEADO_CURSOS` conserva su identificador porque un empleado puede realizar varios cursos, incluso repetir uno.
+7. **Cursos sin catálogo:** los cursos realizados se guardan directamente en `EMPLEADO_CURSOS`, con nombre, descripción, fechas y referencia de constancia; no existe una tabla catálogo `CURSO`.
 
-Está en la raíz del proyecto. Este es el script que debe utilizar todo el equipo. No es necesario copiar manualmente otro bloque SQL del README.
+### Tablas del nuevo modelo
 
-El script contiene:
+| Tabla | Propósito |
+| --- | --- |
+| `EMPLEADOS` | Datos personales y laborales |
+| `DOMICILIOS` | Domicilio de cada empleado, relación 1:1 |
+| `EMPLEADO_CURSOS` | Cursos realizados por empleado, relación 1:N |
+| `ESTATUS_EMPLEADOS` | Estatus propios del empleado |
+| `DEPARTAMENTOS` | Catálogo de departamentos |
+| `PUESTOS` | Catálogo de puestos |
+| `SEXOS` | Catálogo de sexos |
+| `PAISES` | Catálogo de países |
+| `ESTADOS` | Estados asociados a países |
+| `CREDENCIALES` | Datos de acceso vinculados a empleados |
 
-- Borrado opcional de tablas existentes con `CASCADE CONSTRAINTS`.
-- Creación de todas las tablas.
-- Claves primarias y foráneas.
-- Columnas identity de Oracle.
-- Catálogos iniciales.
-- Países y estados iniciales.
-- Departamentos y puestos iniciales.
-- Cursos y empleados de prueba, si están incluidos en la versión del archivo.
+**Restricciones destacadas:** `EMPLEADOS.TELEFONO_CELULAR` es obligatorio, único y de exactamente 10 dígitos; `CORREO_INSTITUCIONAL` es obligatorio, único y tiene validación básica de formato; `DOMICILIOS.CODIGO_POSTAL` debe tener 5 dígitos; la fecha de fin de un curso no puede ser anterior a su fecha de inicio. Las reglas de formato SQL son validaciones básicas, no sustituyen la validación de negocio en Java.
 
-### Antes de ejecutarlo
+## 4. Scripts SQL
 
-1. Cada integrante debe tener una PDB disponible.
-2. Crear o seleccionar un usuario propio de Oracle.
-3. Conectarse a esa PDB con el usuario que utilizará Payara.
-4. Abrir `SCRIPT_CREACION_DE _TODA_LA_BD.sql` en SQL Developer o SQL*Plus.
-5. Ejecutar el script completo.
+| Archivo | Uso |
+| --- | --- |
+| `SCRIPT_CREACION_TABLAS.sql` | Crea únicamente la estructura del esquema nuevo |
+| `SCRIPT_INSERCION.sql` | Inserta los datos de ejemplo en el esquema nuevo |
+| `SCRIPT_CREACION_DE_TODA_LA_BD.sql` | Ejecuta creación e inserciones en un solo archivo |
 
-Ejemplo para preparar un usuario nuevo, reemplazando los valores entre `< >`:
+**Usa una sola alternativa:** ejecuta el script completo **o** el de tablas seguido del de inserciones. No ejecutes ambos métodos sobre el mismo esquema.
+
+> **Importante:** estos archivos están diseñados para un **esquema nuevo y vacío**. No contienen borrado de tablas y no son scripts de actualización de una base ya existente. El script de borrado anterior se retira de la entrega.
+
+### Crear una base nueva
+
+1. Tener disponible una PDB de Oracle y un usuario con permisos para crear tablas.
+2. Conectarse a la PDB con el usuario de aplicación, **no con `SYS` para crear las tablas de la aplicación**.
+3. Ejecutar el archivo completo en SQL*Plus, desde el directorio donde se encuentre:
 
 ```sql
-ALTER SESSION SET CONTAINER = <PDB_SERVICE>;
-
-CREATE USER <DB_USER> IDENTIFIED BY "<DB_PASSWORD>";
-GRANT CREATE SESSION, RESOURCE TO <DB_USER>;
-ALTER USER <DB_USER> QUOTA UNLIMITED ON USERS;
+@SCRIPT_CREACION_DE_TODA_LA_BD.sql
 ```
 
-Después hay que conectarse como `<DB_USER>` en `<PDB_SERVICE>` y ejecutar el archivo oficial.
+Si los nombres de archivo conservan espacios o variantes, utiliza la ruta real entre comillas. También puedes abrir y ejecutar el script en SQL Developer.
 
-> Atención: el script incluye bloques `DROP TABLE`. Ejecutarlo puede borrar la información existente del esquema. Úsalo para una instalación inicial o para reiniciar una base de pruebas, no sobre datos que deban conservarse.
-
-Verifica la instalación:
+Verifica las tablas y los datos:
 
 ```sql
 SELECT USER FROM dual;
 SELECT table_name FROM user_tables ORDER BY table_name;
-SELECT COUNT(*) FROM cat_estatus;
-SELECT COUNT(*) FROM empleado;
-SELECT COUNT(*) FROM curso;
+SELECT COUNT(*) FROM EMPLEADOS;
+SELECT COUNT(*) FROM DOMICILIOS;
+SELECT COUNT(*) FROM EMPLEADO_CURSOS;
+SELECT COUNT(*) FROM ESTATUS_EMPLEADOS;
 ```
 
-## 4. Iniciar Payara desde NetBeans
+**Datos de prueba:** los registros incluidos en el script de inserción son ejemplos. Las credenciales o hashes de ejemplo no deben utilizarse para autenticación real. Si los datos no cumplen alguna restricción, debe corregirse el script de inserción antes de volver a crear un esquema de prueba.
 
-Cada integrante puede instalar Payara en cualquier ruta. Para trabajar con la interfaz web, registra Payara en NetBeans:
+### Base de datos existente
 
-```text
-<PAYARA_HOME>\glassfish\domains\domain1\
-<PAYARA_HOME>\glassfish\domains\domain1\lib\
-```
+La instalación que ya usa el proyecto contiene tablas con nombres antiguos (`EMPLEADO`, `DOMICILIO`, `CURSO`, `EMPLEADO_CURSO`, `CAT_ESTATUS`, etc.). **No ejecutes el script de creación corregido sobre ese esquema.** Para actualizarlo se requiere:
 
-En NetBeans:
+1. Respaldo verificable del esquema y sus datos.
+2. Script de migración específico que conserve empleados, domicilios, cursos y relaciones.
+3. Adaptación de entidades JPA, consultas y servicios REST.
+4. Pruebas de integridad y funcionamiento antes de utilizarlo normalmente.
 
-1. Abre la pestaña **Services**.
-2. Haz clic derecho en **Servers** y selecciona **Add Server**.
-3. Selecciona **Payara Server**.
-4. Indica la carpeta de instalación en `<PAYARA_HOME>`.
-5. Selecciona o crea el dominio `domain1`.
-6. Haz clic derecho sobre Payara y selecciona **Start**.
+## 5. Conexión de Oracle con Payara
 
-Cuando el servidor esté iniciado, abre la consola web de administración:
-
-```text
-http://localhost:4848
-```
-
-La aplicación usa el puerto `8080`.
-
-## 5. Preparar el driver Oracle
-
-Esta parte **no se hace desde la interfaz web de Payara**. La consola web sirve para crear y configurar el pool, pero no instala archivos `.jar` dentro del servidor.
-
-Maven utiliza el driver declarado en `pom.xml`, pero el pool de Payara también necesita tener acceso al driver antes de hacer **Ping**.
-
-Busca el archivo:
-
-```powershell
-Get-ChildItem "$env:USERPROFILE\.m2\repository\com\oracle\database\jdbc\ojdbc11" -Recurse -Filter ojdbc11-*.jar
-```
-
-Copia el archivo `ojdbc11-*.jar` en la carpeta `lib` del dominio:
-
-```text
-<PAYARA_HOME>\glassfish\domains\domain1\lib\
-```
-
-Después de copiar el driver, reinicia Payara desde NetBeans con clic derecho sobre el servidor y **Restart**. Cuando Payara vuelva a iniciar, continúa con la configuración web del pool en la siguiente sección.
-
-## 6. Crear el pool JDBC y el recurso JNDI desde la interfaz web de Payara
-
-La aplicación busca exactamente este recurso JNDI en `persistence.xml`:
+La unidad de persistencia utiliza el recurso JNDI definido en `src/main/resources/META-INF/persistence.xml`:
 
 ```xml
 <jta-data-source>jdbc/orcl</jta-data-source>
 ```
 
-Todo lo de esta sección se hace desde `http://localhost:4848`, sin comandos de Payara:
-
-Ve a **Resources > JDBC > JDBC Connection Pools > New** y usa:
+En la consola de administración de Payara (`http://localhost:4848`), configura un **JDBC Connection Pool** compatible con Oracle:
 
 ```text
 Pool Name: ORACLE
 Resource Type: javax.sql.DataSource
 Datasource Classname: oracle.jdbc.pool.OracleDataSource
+URL: jdbc:oracle:thin:@//<DB_HOST>:<DB_PORT>/<PDB_SERVICE>
+user: <DB_USER>
+password: <DB_PASSWORD>
 ```
 
-Propiedades del pool:
+Crea el recurso JDBC `jdbc/orcl` asociado al pool `ORACLE`. Comprueba la conexión con **Ping**. El driver Oracle debe estar disponible para Payara, no solo para Maven.
+
+En Docker, `DB_HOST` normalmente será el nombre accesible del contenedor Oracle desde el contenedor Payara, **no `localhost`**. Los valores exactos dependen de la red y la configuración del equipo.
+
+No subas credenciales reales ni archivos de configuración con contraseñas a GitHub.
+
+## 6. Compilar y desplegar
+
+Desde la raíz del proyecto:
+
+```bash
+mvn clean package -DskipTests
+```
+
+El WAR esperado es:
 
 ```text
-URL      = jdbc:oracle:thin:@//<DB_HOST>:<DB_PORT>/<PDB_SERVICE>
-user     = <DB_USER>
-password = <DB_PASSWORD>
+target/Sarita.NoSQL.Venus-1.0-SNAPSHOT.war
 ```
 
-Guarda y presiona **Ping**. El ping debe funcionar antes de desplegar la aplicación.
+Puedes desplegarlo desde la consola de Payara (**Applications > Deploy**) o con los comandos de administración del servidor.
 
-Después ve a **Resources > JDBC > JDBC Resources > New**:
+En el entorno Docker utilizado durante el desarrollo, cuando los contenedores y recursos ya están configurados, se ha empleado:
+
+```bash
+docker cp target/Sarita.NoSQL.Venus-1.0-SNAPSHOT.war sarita-payara-nuevo:/tmp/Sarita.NoSQL.Venus.war
+
+docker exec sarita-payara-nuevo /opt/payara/appserver/bin/asadmin \
+  --user admin --passwordfile /opt/payara/passwordFile \
+  deploy --force=true --name Sarita.NoSQL.Venus \
+  /tmp/Sarita.NoSQL.Venus.war
+```
+
+Estos comandos dependen de que exista el contenedor `sarita-payara-nuevo` y de que su archivo de contraseña esté configurado. **El despliegue no garantiza compatibilidad con el esquema nuevo hasta actualizar Java.**
+
+## 7. Acceso y funcionalidades
+
+Con el contexto de despliegue `Sarita.NoSQL.Venus`, la dirección esperada es:
 
 ```text
-JNDI Name: jdbc/orcl
-Pool Name: ORACLE
+http://localhost:8080/Sarita.NoSQL.Venus/
 ```
 
-No subas contraseñas reales, `domain.xml` personal ni archivos con credenciales al repositorio.
+La interfaz contempla búsqueda de empleados por identificador, nombre, apellidos o correo; filtros por estado; consulta de detalles; altas y edición; domicilio; y registro de cursos desde la edición de un empleado.
 
-## 7. Construir y desplegar desde la consola web
+**Cursos:** en el diseño nuevo se registra el curso realizado directamente para el empleado. No se crea ni selecciona un curso desde un catálogo global. La vista y los servicios deben quedar alineados con este flujo.
 
-Construye desde la carpeta del proyecto:
+**Bajas:** se debe conservar la lógica de baja de empleados acordada para la aplicación, sin confundirla con la eliminación física de registros.
 
-```powershell
-cd <PROJECT_DIR>
-mvn clean package
-```
+> Las rutas REST, entidades y pantallas deben verificarse y adaptarse después de la migración SQL. Las rutas de catálogos de cursos documentadas en versiones anteriores del README ya no describen el modelo definitivo.
 
-Se generará:
-
-```text
-target\Sarita.NoSQL.Venus-1.0-SNAPSHOT.war
-```
-
-### Desplegar la WAR desde Payara Admin Console
-
-1. Construye el proyecto con Maven.
-2. Abre `http://localhost:4848`.
-3. En el menú izquierdo entra a **Applications**.
-4. Presiona **Deploy**.
-5. Selecciona **Packaged File to Be Uploaded to the Server**.
-6. Presiona **Browse** y selecciona:
-
-```text
-<PROJECT_DIR>\target\Sarita.NoSQL.Venus-1.0-SNAPSHOT.war
-```
-
-7. En **Context Root** escribe:
-
-```text
-/Sarita.NoSQL.Venus-1.0-SNAPSHOT
-```
-
-8. Deja **Virtual Servers** como `server`.
-9. Presiona **OK** o **Deploy**.
-10. En la lista de aplicaciones verifica que aparezca como **Enabled**.
-
-También puedes registrar el servidor en NetBeans, agregar el proyecto y usar **Clean and Build > Run**; NetBeans abrirá el despliegue en Payara.
-
-## 8. Abrir la aplicación
-
-Página principal:
-
-```text
-http://localhost:8080/Sarita.NoSQL.Venus-1.0-SNAPSHOT/
-```
-
-API base:
-
-```text
-http://localhost:8080/Sarita.NoSQL.Venus-1.0-SNAPSHOT/resources/
-```
-
-Rutas principales:
-
-| Método | Ruta | Función |
-| --- | --- | --- |
-| GET | `/resources/empleados` | Lista empleados |
-| POST | `/resources/empleados` | Crea empleado y domicilio |
-| PUT | `/resources/empleados/{id}` | Edita empleado y domicilio |
-| DELETE | `/resources/empleados/{id}` | Da de baja empleado |
-| GET | `/resources/empleados/catalogos` | Carga los catálogos del formulario |
-| GET/POST | `/resources/catalogos/cursos` | Consulta y crea cursos |
-| GET/POST | `/resources/catalogos/paises` | Consulta y crea países |
-| GET/POST | `/resources/catalogos/estados` | Consulta y crea estados |
-| GET/POST | `/resources/empleado-cursos` | Consulta y asigna cursos |
-| GET | `/resources/empleado-cursos/empleado/{id}` | Consulta cursos de un empleado |
-
-## 9. Flujo de uso
-
-1. Abre **Empleados**.
-2. Selecciona **Nuevo empleado**.
-3. Captura los datos personales, laborales y el domicilio.
-4. Usa un correo institucional que todavía no exista.
-5. Guarda el empleado.
-6. Usa **Ver detalle** para consultar toda su información.
-7. En **Cursos y asignaciones**, crea o selecciona un curso.
-8. Activa **Curso en curso** si `fecha_fin` debe permanecer como `NULL`.
-9. Desactiva la opción y captura una fecha final cuando el curso termine.
-
-## 10. Solución de problemas
-
-### Payara devuelve `404`
-
-Comprueba el despliegue desde `http://localhost:4848`, entrando a **Applications**. La aplicación debe aparecer como **Enabled**.
-
-Usa exactamente el contexto:
-
-```text
-/Sarita.NoSQL.Venus-1.0-SNAPSHOT/
-```
-
-### `No password credential found`
-
-Configura nuevamente el usuario y contraseña en **Resources > JDBC > JDBC Connection Pools > ORACLE > Additional Properties**. Guarda, reinicia Payara desde NetBeans y usa el botón **Ping** del pool.
-
-### `ORA-01017`, `ORA-17002` o error de conexión
-
-Revisa `<DB_HOST>`, `<DB_PORT>`, `<PDB_SERVICE>`, `<DB_USER>` y `<DB_PASSWORD>`.
-
-### `ORA-00001 unique constraint violated`
-
-El correo del empleado o el nombre del curso ya existe. Usa un dato diferente.
-
-### `ORA-02289` o `ORA-32795`
-
-No insertes manualmente IDs de columnas `GENERATED ALWAYS AS IDENTITY`. La aplicación omite esas columnas para que Oracle genere los valores.
-
-### Revisar el log de Payara
-
-```powershell
-Get-Content '<PAYARA_HOME>\glassfish\domains\domain1\logs\server.log' -Tail 100
-```
-
-## 11. Estructura MVC
+## 8. Estructura del proyecto
 
 ```text
 src/main/java/com/mycompany/sarita/nosql/venus/
-├── model/       Entidades JPA y relaciones con Oracle
-├── service/     Lógica de negocio y objetos de petición
-└── resources/   Controladores REST JAX-RS
+├── model/       Entidades JPA
+├── service/     Lógica de negocio
+└── resources/   Recursos REST
+
+src/main/resources/META-INF/
+└── persistence.xml
 
 src/main/webapp/
-├── index.html   Vista y comportamiento del frontend
-└── styles.css   Estilos visuales externos
+├── index.html
+├── views/       Vistas de empleados y catálogos
+├── forms/       Formularios
+├── js/          Lógica de interfaz
+└── styles.css   Estilos
 ```
 
-La persistencia se configura en `src/main/resources/META-INF/persistence.xml` y usa el recurso JNDI `jdbc/orcl`.
+## 9. Solución de problemas
 
-## 12. Git para el equipo
+| Problema | Qué revisar |
+| --- | --- |
+| `ORA-00942` (tabla no existe) | Que el esquema conectado y los nombres plurales coincidan con las entidades y consultas Java |
+| `ORA-00001` (valor duplicado) | Correo, teléfono, usuario o campos con `UNIQUE` |
+| `ORA-02291` (clave foránea) | Que exista el empleado o el registro de catálogo referenciado |
+| `ORA-02290` (CHECK) | Formato de teléfono, correo, código postal o coherencia de fechas |
+| Error de conexión JDBC | Host, puerto, PDB, usuario, contraseña y **Ping** del pool `ORACLE` |
+| Error `404` | Estado del despliegue y context root en Payara |
+| Errores al insertar IDs | Revisar columnas `GENERATED ALWAYS AS IDENTITY`; no enviar valores manuales |
 
-```powershell
+Para consultar las restricciones de una tabla en Oracle:
+
+```sql
+SELECT constraint_name, constraint_type, status
+FROM user_constraints
+WHERE table_name = 'EMPLEADOS'
+ORDER BY constraint_name;
+```
+
+## 10. Git y colaboración
+
+Antes de registrar cambios:
+
+```bash
 git status
-git pull
-git add .
-git commit -m "Describe el cambio"
-git push
+git diff
 ```
 
-Antes de hacer `push`, verifica que no incluyes contraseñas, configuraciones personales, `target/` ni archivos generados por Payara.
+Después de verificar los archivos correctos:
+
+```bash
+git add README.md
+git commit -m "Documentacion: actualizar README al nuevo modelo de base de datos"
+git push origin master
+```
+
+No uses `git add .` sin revisar archivos temporales, respaldos, credenciales o contenido generado. El README documenta el **modelo SQL propuesto**; la migración de Oracle y la adaptación de Java se deben registrar en commits adicionales una vez probadas.
