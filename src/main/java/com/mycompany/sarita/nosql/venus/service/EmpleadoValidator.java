@@ -6,6 +6,11 @@ import java.util.List;
 
 public final class EmpleadoValidator {
 
+    private static final java.util.regex.Pattern NAME_PATTERN =
+            java.util.regex.Pattern.compile("^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$");
+    private static final java.util.regex.Pattern EMAIL_PATTERN =
+            java.util.regex.Pattern.compile("^[^\\s@]+@[^\\s@]+\\.com$", java.util.regex.Pattern.CASE_INSENSITIVE);
+
     private EmpleadoValidator() {
     }
 
@@ -17,6 +22,12 @@ public final class EmpleadoValidator {
             return new ValidationResult(false, errores);
         }
 
+        validarNombre(datos.getNombre(), "nombre", errores);
+        validarNombre(datos.getApellidoPaterno(), "apellido paterno", errores);
+        if (datos.getApellidoMaterno() != null && !datos.getApellidoMaterno().isBlank()) {
+            validarNombre(datos.getApellidoMaterno(), "apellido materno", errores);
+        }
+
         LocalDate fechaNacimiento = datos.getFechaNacimiento();
         if (fechaNacimiento == null) {
             errores.add("La fecha de nacimiento es obligatoria.");
@@ -25,6 +36,25 @@ public final class EmpleadoValidator {
             if (fechaNacimiento.isAfter(LocalDate.now()) || fechaNacimiento.isAfter(edadMinima)) {
                 errores.add("La persona debe ser mayor o igual a 18 años.");
             }
+        }
+
+        LocalDate fechaIngreso = datos.getFechaIngreso();
+        if (fechaIngreso == null) {
+            errores.add("La fecha de ingreso es obligatoria.");
+        } else {
+            if (fechaNacimiento != null && fechaIngreso.isBefore(fechaNacimiento)) {
+                errores.add("La fecha de ingreso no puede ser menor a la fecha de nacimiento.");
+            }
+            if (fechaIngreso.isAfter(LocalDate.now())) {
+                errores.add("La fecha de ingreso no puede ser posterior a la fecha actual.");
+            }
+        }
+
+        String correo = datos.getCorreoInstitucional();
+        if (correo == null || correo.isBlank()) {
+            errores.add("El correo institucional es obligatorio.");
+        } else if (!EMAIL_PATTERN.matcher(correo.trim()).matches()) {
+            errores.add("El correo institucional debe terminar en .com.");
         }
 
         String telefono = datos.getTelefonoCelular();
@@ -38,6 +68,14 @@ public final class EmpleadoValidator {
         }
 
         return new ValidationResult(errores.isEmpty(), errores);
+    }
+
+    private static void validarNombre(String valor, String campo, List<String> errores) {
+        if (valor == null || valor.isBlank()) {
+            errores.add("El " + campo + " es obligatorio.");
+        } else if (!NAME_PATTERN.matcher(valor.trim()).matches()) {
+            errores.add("El " + campo + " solo puede contener letras y espacios.");
+        }
     }
 
     public record ValidationResult(boolean isValido, List<String> errores) {

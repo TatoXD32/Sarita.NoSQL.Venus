@@ -423,6 +423,123 @@ function fillGeneralStatuses() {
 let employeeFormStep = 0;
 let employeeSearchActivated = false;
 
+const employeeNamePattern = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
+
+function localDateString(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function configureEmployeeDateLimits(form) {
+    if (!form) return;
+
+    const birth = form.elements.fechaNacimiento;
+    const entry = form.elements.fechaIngreso;
+    if (!birth || !entry) return;
+
+    const today = new Date();
+    const eighteenYearsAgo = new Date(
+        today.getFullYear() - 18,
+        today.getMonth(),
+        today.getDate()
+    );
+    birth.max = localDateString(eighteenYearsAgo);
+    entry.max = localDateString(today);
+
+    const syncEntryLimits = () => {
+        entry.min = birth.value || '';
+        entry.max = localDateString(new Date());
+    };
+
+    syncEntryLimits();
+    birth.onchange = syncEntryLimits;
+}
+
+function validateEmployeeNameFields(form) {
+    if (!form) return true;
+
+    const fields = [
+        ['nombre', 'El nombre'],
+        ['apellidoPaterno', 'El apellido paterno'],
+        ['apellidoMaterno', 'El apellido materno']
+    ];
+
+    for (const [name, label] of fields) {
+        const field = form.elements[name];
+        if (!field) continue;
+
+        const value = field.value.trim();
+        field.value = value;
+        const message = value && !employeeNamePattern.test(value)
+            ? `${label} solo puede contener letras y espacios.`
+            : '';
+        field.setCustomValidity(message);
+
+        if (!field.checkValidity()) {
+            field.reportValidity();
+            return false;
+        }
+    }
+    return true;
+}
+
+function validateEmployeeDates(form) {
+    if (!form) return true;
+
+    const birth = form.elements.fechaNacimiento;
+    const entry = form.elements.fechaIngreso;
+    if (!birth || !entry) return true;
+
+    birth.setCustomValidity('');
+    entry.setCustomValidity('');
+    const today = localDateString();
+
+    if (birth.value) {
+        const maximumBirth = localDateString(new Date(
+            new Date().getFullYear() - 18,
+            new Date().getMonth(),
+            new Date().getDate()
+        ));
+        if (birth.value > maximumBirth) {
+            birth.setCustomValidity('La persona debe tener al menos 18 años.');
+        }
+    }
+
+    if (entry.value) {
+        if (entry.value > today) {
+            entry.setCustomValidity('La fecha de ingreso no puede ser posterior a la fecha actual.');
+        } else if (birth.value && entry.value < birth.value) {
+            entry.setCustomValidity('La fecha de ingreso no puede ser menor a la fecha de nacimiento.');
+        }
+    }
+
+    for (const field of [birth, entry]) {
+        if (!field.checkValidity()) {
+            field.reportValidity();
+            return false;
+        }
+    }
+    return true;
+}
+
+function validateEmployeeEmail(form) {
+    const field = form?.elements.correoInstitucional;
+    if (!field) return true;
+
+    const email = field.value.trim();
+    field.value = email;
+    const valid = /^[^\s@]+@[^\s@]+\.com$/i.test(email);
+    field.setCustomValidity(valid ? '' : 'El correo institucional debe terminar en .com.');
+
+    if (!field.checkValidity()) {
+        field.reportValidity();
+        return false;
+    }
+    return true;
+}
+
 
 function showEmployeeFormStep(step) {
     const form = $('#edit-form');
@@ -470,6 +587,7 @@ function validateEmployeeStep(step) {
     );
 
     if (!section) return false;
+    configureEmployeeDateLimits(form);
 
     const originalStep = employeeFormStep;
     showEmployeeFormStep(step);
@@ -485,6 +603,12 @@ function validateEmployeeStep(step) {
         }
     }
 
+    if (step === 0) {
+        if (!validateEmployeeNameFields(form)) return false;
+        if (!validateEmployeeDates(form)) return false;
+        if (!validateEmployeeEmail(form)) return false;
+    }
+
     showEmployeeFormStep(originalStep);
     return true;
 }
@@ -494,6 +618,7 @@ function bindEmployeeFormSteps() {
     if (!form) return;
 
     form.noValidate = true;
+    configureEmployeeDateLimits(form);
     showEmployeeFormStep(0);
 
     $('#employee-next')?.addEventListener('click', () => {
@@ -790,6 +915,7 @@ function openEditor(employee) {
         updateStatesOptions('');
         setStatusFieldState(form, false);
     }
+    configureEmployeeDateLimits(form);
     const coursesTab = $('#employee-courses-tab');
 
     if (coursesTab) {

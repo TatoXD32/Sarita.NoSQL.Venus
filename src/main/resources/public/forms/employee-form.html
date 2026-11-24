@@ -166,6 +166,8 @@
                             name="nombre"
                             type="text"
                             required
+                            pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*"
+                            title="Solo letras y espacios"
                             autocomplete="given-name">
                     </label>
 
@@ -174,6 +176,8 @@
                         <input
                             name="apellidoPaterno"
                             type="text"
+                            pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*"
+                            title="Solo letras y espacios"
                             required>
                     </label>
 
@@ -181,7 +185,9 @@
                         Apellido materno
                         <input
                             name="apellidoMaterno"
-                            type="text">
+                            type="text"
+                            pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*"
+                            title="Solo letras y espacios">
                     </label>
 
                     <label>
@@ -189,6 +195,7 @@
                         <input
                             name="fechaNacimiento"
                             type="date"
+                            id="fecha-nacimiento"
                             required>
                     </label>
 
@@ -212,6 +219,7 @@
                         <input
                             name="fechaIngreso"
                             type="date"
+                            id="fecha-ingreso"
                             required>
                     </label>
 
@@ -220,6 +228,8 @@
                         <input
                             name="correoInstitucional"
                             type="email"
+                            pattern="[^@\s]+@[^@\s]+\.com"
+                            title="Ingrese un correo que termine en .com"
                             required
                             autocomplete="email">
                     </label>
