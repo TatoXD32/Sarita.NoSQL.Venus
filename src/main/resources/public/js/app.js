@@ -1568,7 +1568,7 @@ async function assignCourse(event) {
         data.fechaFin = null;
     }
 
-    // Registrar la asignación en Oracle
+    // Registrar la asignación en MongoDB
     const response = await request(
         'resources/empleado-cursos', 'POST', data
     );
@@ -1854,7 +1854,7 @@ function bindNavigationEvents() {
         });
     });
 
-    // Cerrar la sesión en Payara y regresar al login.
+    // Cerrar la sesión y regresar al login.
     $('#exit-app')?.addEventListener('click', async () => {
         if (!window.confirm('¿Deseas cerrar sesión?')) return;
 

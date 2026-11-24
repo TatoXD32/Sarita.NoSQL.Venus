@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Venus API",
+            "request": "launch",
+            "mainClass": "com.mycompany.sarita.nosql.venus.VenusApplication",
+            "projectName": "Sarita.NoSQL.Venus"
+        }
+    ]
+}

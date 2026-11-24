@@ -29,8 +29,7 @@ public class GenerarAdmin {
             String hash = PasswordUtil.hash(new String(password));
 
             System.out.println("Usuario: admin");
-            System.out.println("ID_EMPLEADO: 21");
-            System.out.println("Hash generado correctamente.");
+            System.out.println("Hash para el campo credenciales.contrasena_hash:");
             System.out.println(hash);
 
         } finally {
